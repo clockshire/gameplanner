@@ -6,9 +6,16 @@
   "scripts": {
     "start": "npx serve -s . -l 3000",
     "build": "echo 'Build complete - static files ready for deployment'",
-    "test": "echo 'No tests configured yet'"
+    "test": "echo 'No tests configured yet'",
+    "dynamodb:start": "docker run -d --name dynamodb-local -p 8000:8000 -v $(pwd)/docker/dynamodb:/home/dynamodblocal/data amazon/dynamodb-local:latest -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data",
+    "dynamodb:stop": "docker stop dynamodb-local && docker rm dynamodb-local",
+    "dynamodb:setup": "node backend/scripts/setup-local.js",
+    "dynamodb:test": "node backend/scripts/test-operations.js",
+    "dynamodb:status": "docker ps --filter name=dynamodb-local"
   },
-  "dependencies": {},
+  "dependencies": {
+    "aws-sdk": "^2.1490.0"
+  },
   "devDependencies": {
     "serve": "^14.2.1"
   },
