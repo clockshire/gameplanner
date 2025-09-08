@@ -3,19 +3,28 @@ const { useState } = React;
 // Main App component
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gray-900">
+      <header className="bg-gray-800 shadow-lg border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Game Planner</h1>
+            <h1 className="text-2xl font-bold text-white">Game Planner</h1>
             <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-gray-500 hover:text-gray-900">
+              <a
+                href="#"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 Events
               </a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">
+              <a
+                href="#"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 Rooms
               </a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">
+              <a
+                href="#"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 Games
               </a>
             </nav>
@@ -38,49 +47,43 @@ function HelloWorld() {
 
   return (
     <div className="text-center">
-      <div className="bg-white overflow-hidden shadow rounded-lg">
+      <div className="bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-700">
         <div className="px-4 py-5 sm:p-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl font-bold text-white mb-4">
             Hello World! 🎮
           </h2>
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="text-lg text-gray-300 mb-6">
             Welcome to the Game Planner skeleton app. This is a basic React
             application ready for extension.
           </p>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-            <p className="text-blue-800">
+          <div className="bg-blue-900 border border-blue-700 rounded-md p-4 mb-6">
+            <p className="text-blue-200">
               <strong>Counter Test:</strong> Click the button to verify React
               state management is working.
             </p>
             <div className="mt-4">
               <button
                 onClick={() => setCount(count + 1)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition-colors"
               >
                 Count: {count}
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-            <div className="bg-gray-50 p-4 rounded">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                ✅ React Setup
-              </h3>
-              <p>Basic React components working</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
+            <div className="bg-gray-700 p-4 rounded border border-gray-600">
+              <h3 className="font-semibold text-white mb-2">✅ React Setup</h3>
+              <p className="text-gray-300">Basic React components working</p>
             </div>
-            <div className="bg-gray-50 p-4 rounded">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                ✅ Tailwind CSS
-              </h3>
-              <p>Responsive styling configured</p>
+            <div className="bg-gray-700 p-4 rounded border border-gray-600">
+              <h3 className="font-semibold text-white mb-2">✅ Tailwind CSS</h3>
+              <p className="text-gray-300">Responsive styling configured</p>
             </div>
-            <div className="bg-gray-50 p-4 rounded">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                ✅ Mobile-First
-              </h3>
-              <p>Responsive design ready</p>
+            <div className="bg-gray-700 p-4 rounded border border-gray-600">
+              <h3 className="font-semibold text-white mb-2">✅ Mobile-First</h3>
+              <p className="text-gray-300">Responsive design ready</p>
             </div>
           </div>
         </div>
