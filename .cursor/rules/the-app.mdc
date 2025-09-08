@@ -1,7 +1,7 @@
 ---
 description: Guidelines for the Game Scheduling app
 globs:
-alwaysApply: false
+alwaysApply: true
 ---
 
 project:
