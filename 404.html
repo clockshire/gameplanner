@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Planner - Page Not Found</title>
+    <base href="." />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- React -->
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    ></script>
+
+    <style>
+      /* Custom styles for the app */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+          'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+          'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div id="root"></div>
+
+    <!-- Load our React app -->
+    <script type="text/babel" src="src/app.js"></script>
+
+    <!-- Redirect to main app for SPA routing -->
+    <script>
+      // Redirect unmatched routes back to the main app
+      // This ensures the SPA handles all routing
+      if (window.location.pathname !== '/') {
+        window.location.replace('/');
+      }
+    </script>
+  </body>
+</html>

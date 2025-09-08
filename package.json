@@ -1,0 +1,23 @@
+{
+  "name": "app-gameplanner",
+  "version": "1.0.0",
+  "description": "Multi-event, multi-user app for managing and booking gameplay sessions",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -s . -l 3000",
+    "build": "echo 'Build complete - static files ready for deployment'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "keywords": [
+    "react",
+    "gameplanner",
+    "aws-amplify",
+    "multi-user"
+  ],
+  "author": "chisel@clockshire.uk",
+  "license": "MIT"
+}
