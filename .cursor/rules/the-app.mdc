@@ -1,0 +1,35 @@
+---
+description: Guidelines for the Game Scheduling app
+globs:
+alwaysApply: false
+---
+
+project:
+name: Multi-event, multi-user app for managing and booking gameplay sessions
+description: >
+An application that can be deployed to AWS Amplify that will allow
+authicated users to create, manage, join, leave rooms and games at an
+event.
+
+goals:
+
+- ReactJS based application
+- Dynamic web application(HTML, JS, CSS)
+- Clean, modular code with ES modules
+- Mobile-first design
+- Responsive and accessible UI
+
+directory_structure:
+
+- src/: Javascript source files (modular ES6+)
+
+best_practices:
+
+- Responsive layout (flexbox/grid)
+- Semantic HTML5 structure
+- Accessibility: use alt tags, ARIA roles, keyboard navigation
+- Code splitting (if using build tool)
+- Lazy-load large assets or images
+- Minify HTML/CSS/JS for production
+- Include `<base href="." />` in HTML for relative path resolution
+- Redirect 404.html back to SPA entry point for unmatched routes
