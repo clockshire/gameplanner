@@ -460,3 +460,6 @@ tags
 [._]*.un~
 
 # End of https://www.toptal.com/developers/gitignore/api/git,vim,node,ruby,go,terraform,python
+
+# don't manage our local dynamodb data
+docker/dynamodb/shared-local-instance.db
