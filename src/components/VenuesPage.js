@@ -9,7 +9,7 @@ const { useState, useEffect } = React;
  * VenuesPage component
  * Shows all venues with proper formatting and empty state
  */
-function VenuesPage() {
+function VenuesPage({ onEditVenue, onVenueUpdated }) {
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -289,7 +289,10 @@ function VenuesPage() {
                         Created:{' '}
                         {new Date(venue.createdAt).toLocaleDateString()}
                       </span>
-                      <button className="text-blue-400 hover:text-blue-300 transition-colors">
+                      <button
+                        onClick={() => onEditVenue(venue.venueId)}
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                      >
                         Edit Venue
                       </button>
                     </div>

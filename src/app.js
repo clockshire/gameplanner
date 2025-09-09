@@ -5,6 +5,7 @@ function App() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
+  const [editVenueId, setEditVenueId] = useState(null);
 
   /**
    * Handle logout
@@ -25,6 +26,30 @@ function App() {
    */
   const handleNavigation = (page) => {
     setCurrentPage(page);
+    setEditVenueId(null); // Clear edit venue when navigating
+  };
+
+  /**
+   * Handle edit venue
+   */
+  const handleEditVenue = (venueId) => {
+    setEditVenueId(venueId);
+    setCurrentPage('edit-venue');
+  };
+
+  /**
+   * Handle back from edit venue
+   */
+  const handleBackFromEditVenue = () => {
+    setEditVenueId(null);
+    setCurrentPage('venues');
+  };
+
+  /**
+   * Handle venue updated
+   */
+  const handleVenueUpdated = () => {
+    // This will be passed to VenuesPage to refresh the list
   };
 
   /**
@@ -144,7 +169,16 @@ function App() {
         {currentPage === 'events' ? (
           <EventsPage />
         ) : currentPage === 'venues' ? (
-          <VenuesPage />
+          <VenuesPage
+            onEditVenue={handleEditVenue}
+            onVenueUpdated={handleVenueUpdated}
+          />
+        ) : currentPage === 'edit-venue' && editVenueId ? (
+          <EditVenuePage
+            venueId={editVenueId}
+            onBack={handleBackFromEditVenue}
+            onVenueUpdated={handleVenueUpdated}
+          />
         ) : (
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="px-4 py-6 sm:px-0">
