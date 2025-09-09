@@ -88,6 +88,16 @@ function App() {
                 Events
               </button>
               <button
+                onClick={() => handleNavigation('venues')}
+                className={`transition-colors ${
+                  currentPage === 'venues'
+                    ? 'text-white font-semibold'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Venues
+              </button>
+              <button
                 onClick={() => handleNavigation('rooms')}
                 className={`transition-colors ${
                   currentPage === 'rooms'
