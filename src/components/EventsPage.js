@@ -13,6 +13,7 @@ function EventsPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   /**
    * Fetch events from the API
@@ -36,6 +37,14 @@ function EventsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * Handle event creation
+   */
+  const handleEventCreated = () => {
+    // Refresh the events list
+    fetchEvents();
   };
 
   /**
@@ -171,14 +180,23 @@ function EventsPage() {
               No Current Events
             </h3>
             <p className="text-gray-400 mb-6">
-              There are no events scheduled at the moment. Check back later!
+              There are no events scheduled at the moment. Create your first
+              event or check back later!
             </p>
-            <button
-              onClick={fetchEvents}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded transition-colors"
-            >
-              Refresh
-            </button>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded transition-colors"
+              >
+                Create Event
+              </button>
+              <button
+                onClick={fetchEvents}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded transition-colors"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
         )}
 
@@ -284,6 +302,13 @@ function EventsPage() {
             ))}
           </div>
         )}
+
+        {/* Create Event Modal */}
+        <CreateEventModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onEventCreated={handleEventCreated}
+        />
       </div>
     </div>
   );
