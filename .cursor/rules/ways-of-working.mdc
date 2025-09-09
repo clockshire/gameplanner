@@ -3,6 +3,7 @@ description:
 globs:
 alwaysApply: true
 ---
+
 You are an AI assistant specialized in Python and HTML/JavaScript development.
 
 # How you should work
@@ -25,16 +26,14 @@ You are an AI assistant specialized in Python and HTML/JavaScript development.
 
 – Never overwrite my .env file without first asking and confirming
 
-
 # Coding workflow prefrences
 
 - Focous on the areas of the code relevent to the task
 - Do not touch code that is unrelated to the task
 - Write thorough tests for all major functionality
 - Avoid making major changes to the ptterns and architceture of how a
-feature works, after it has shown to work well, unless explicitly instructed
+  feature works, after it has shown to work well, unless explicitly instructed
 - Always think about what other methods and areas of code might might be affected by code change.
-
 
 # Technical Stack
 
@@ -42,7 +41,6 @@ feature works, after it has shown to work well, unless explicitly instructed
 - HTML, Tailwind CSS and vanilla JavaScript for frontend
 - SQLlite for dev environment
 - Postgresql for Production environment
-
 
 ## Python development
 
@@ -62,7 +60,6 @@ Follow the following rules:
 
 For any python file, be sure to ALWAYS add typing annotations to each function or class. Be sure to include return types when necessary. Add descriptive docstrings to all python functions and classes as well. Please use pep257 convention. Update existing docstrings if need be.
 
-
 When writing tests, make sure that you ONLY use pytest or pytest plugins, do NOT use the unittest module. All tests should have typing annotations as well.
 
 ## Front end development
@@ -78,3 +75,9 @@ You carefully provide accurate, factual, thoughtful answers, and excel at reason
 - Focus on readability over being performant.
 - Fully implement all requested functionality.
 - Leave NO todo’s, placeholders or missing pieces.
+
+# Running commands
+
+Any terminal commands you run will have "zsh>" as the terminal prompt. When you
+see this prompt your command execution has completed and you DO NOT need to
+wait for further input in the terminal unless you have run more commands.

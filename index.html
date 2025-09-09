@@ -36,7 +36,26 @@
   <body class="bg-gray-900 min-h-screen">
     <div id="root"></div>
 
+    <!-- Load authentication context -->
+    <script type="text/babel" src="src/auth-context.js"></script>
+
+    <!-- Load authentication components -->
+    <script type="text/babel" src="src/components/LoginForm.js"></script>
+    <script type="text/babel" src="src/components/SignupForm.js"></script>
+    <script type="text/babel" src="src/components/AuthModal.js"></script>
+    <script type="text/babel" src="src/components/UserProfile.js"></script>
+
     <!-- Load our React app -->
     <script type="text/babel" src="src/app.js"></script>
+
+    <!-- Initialize app with AuthProvider -->
+    <script type="text/babel">
+      ReactDOM.render(
+        <AuthProvider>
+          <App />
+        </AuthProvider>,
+        document.getElementById('root')
+      );
+    </script>
   </body>
 </html>

@@ -5,6 +5,8 @@
   "main": "index.html",
   "scripts": {
     "start": "npx serve -s . -l 3000",
+    "server": "node backend/src/server.js",
+    "dev": "concurrently \"npm run dynamodb:start\" \"npm run server\" \"npm run start\"",
     "build": "echo 'Build complete - static files ready for deployment'",
     "test": "echo 'No tests configured yet'",
     "dynamodb:start": "docker run -d --name dynamodb-local -p 8000:8000 -v $(pwd)/docker/dynamodb:/home/dynamodblocal/data amazon/dynamodb-local:latest -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data",
@@ -14,9 +16,13 @@
     "dynamodb:status": "docker ps --filter name=dynamodb-local"
   },
   "dependencies": {
-    "aws-sdk": "^2.1490.0"
+    "aws-sdk": "^2.1490.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "serve": "^14.2.1"
   },
   "keywords": [
