@@ -28,6 +28,7 @@ async function setupLocalEnvironment() {
   const tables = [
     { name: 'users', schema: schemas.usersTableSchema },
     { name: 'events', schema: schemas.eventsTableSchema },
+    { name: 'venues', schema: schemas.venuesTableSchema },
     { name: 'rooms', schema: schemas.roomsTableSchema },
     { name: 'games', schema: schemas.gamesTableSchema },
     { name: 'bookings', schema: schemas.bookingsTableSchema },

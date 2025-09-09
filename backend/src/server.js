@@ -7,8 +7,9 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
+const venueRoutes = require('./routes/venues');
 const { testConnection, createTableIfNotExists } = require('./dynamodb');
-const { usersTableSchema } = require('./schemas');
+const { usersTableSchema, venuesTableSchema } = require('./schemas');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/venues', venueRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -73,13 +75,25 @@ async function startServer() {
 
     // Create users table if it doesn't exist
     console.log('📝 Ensuring users table exists...');
-    const tableCreated = await createTableIfNotExists(
+    const usersTableCreated = await createTableIfNotExists(
       'users',
       usersTableSchema
     );
 
-    if (!tableCreated) {
+    if (!usersTableCreated) {
       console.error('❌ Failed to create users table');
+      process.exit(1);
+    }
+
+    // Create venues table if it doesn't exist
+    console.log('📝 Ensuring venues table exists...');
+    const venuesTableCreated = await createTableIfNotExists(
+      'venues',
+      venuesTableSchema
+    );
+
+    if (!venuesTableCreated) {
+      console.error('❌ Failed to create venues table');
       process.exit(1);
     }
 

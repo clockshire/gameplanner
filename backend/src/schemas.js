@@ -98,8 +98,56 @@ const eventsTableSchema = {
 };
 
 /**
+ * Venues table schema
+ * Stores venue information and details
+ */
+const venuesTableSchema = {
+  TableName: 'venues',
+  KeySchema: [
+    {
+      AttributeName: 'PK',
+      KeyType: 'HASH', // Partition key
+    },
+    {
+      AttributeName: 'SK',
+      KeyType: 'RANGE', // Sort key
+    },
+  ],
+  AttributeDefinitions: [
+    {
+      AttributeName: 'PK',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'SK',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'venueName',
+      AttributeType: 'S', // String
+    },
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'VenueNameIndex',
+      KeySchema: [
+        {
+          AttributeName: 'venueName',
+          KeyType: 'HASH',
+        },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+    },
+  ],
+  BillingMode: 'PAY_PER_REQUEST',
+};
+
+/**
  * Rooms table schema
  * Stores room information and availability
+ * Now includes venue reference
  */
 const roomsTableSchema = {
   TableName: 'rooms',
@@ -121,6 +169,28 @@ const roomsTableSchema = {
     {
       AttributeName: 'SK',
       AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'venueId',
+      AttributeType: 'S', // String
+    },
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'VenueRoomsIndex',
+      KeySchema: [
+        {
+          AttributeName: 'venueId',
+          KeyType: 'HASH',
+        },
+        {
+          AttributeName: 'SK',
+          KeyType: 'RANGE',
+        },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
     },
   ],
   BillingMode: 'PAY_PER_REQUEST',
@@ -187,6 +257,7 @@ const bookingsTableSchema = {
 module.exports = {
   usersTableSchema,
   eventsTableSchema,
+  venuesTableSchema,
   roomsTableSchema,
   gamesTableSchema,
   bookingsTableSchema,
