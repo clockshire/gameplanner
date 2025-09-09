@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npx serve -s . -l 3000",
     "server": "node backend/src/server.js",
-    "dev": "concurrently \"npm run dynamodb:start\" \"npm run server\" \"npm run start\"",
+    "server:dev": "nodemon backend/src/server.js --watch backend/src --ext js",
+    "dev": "concurrently \"npm run dynamodb:start\" \"npm run server:dev\" \"npm run start\"",
     "build": "echo 'Build complete - static files ready for deployment'",
     "test": "echo 'No tests configured yet'",
     "dynamodb:janky-start": "docker run -d --name dynamodb-local -p 8000:8000 -v $(pwd)/docker/dynamodb:/home/dynamodblocal/data amazon/dynamodb-local:latest -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
+    "nodemon": "^3.1.10",
     "serve": "^14.2.1"
   },
   "keywords": [
