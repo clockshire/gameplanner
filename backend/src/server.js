@@ -8,8 +8,13 @@ const path = require('path');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const venueRoutes = require('./routes/venues');
+const eventRoutes = require('./routes/events');
 const { testConnection, createTableIfNotExists } = require('./dynamodb');
-const { usersTableSchema, venuesTableSchema } = require('./schemas');
+const {
+  usersTableSchema,
+  venuesTableSchema,
+  eventsTableSchema,
+} = require('./schemas');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,6 +33,7 @@ app.use((req, res, next) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/venues', venueRoutes);
+app.use('/api/events', eventRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -39,8 +45,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../../')));
+// Serve static files from the React app (only for non-API routes)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  express.static(path.join(__dirname, '../../'))(req, res, next);
+});
 
 // Catch all handler: send back React's index.html file for any non-API routes
 app.all('*', (req, res) => {
@@ -94,6 +105,18 @@ async function startServer() {
 
     if (!venuesTableCreated) {
       console.error('❌ Failed to create venues table');
+      process.exit(1);
+    }
+
+    // Create events table if it doesn't exist
+    console.log('📝 Ensuring events table exists...');
+    const eventsTableCreated = await createTableIfNotExists(
+      'events',
+      eventsTableSchema
+    );
+
+    if (!eventsTableCreated) {
+      console.error('❌ Failed to create events table');
       process.exit(1);
     }
 

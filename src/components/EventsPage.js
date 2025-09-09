@@ -1,0 +1,293 @@
+/**
+ * Events Page Component
+ * Displays a list of all events
+ */
+
+const { useState, useEffect } = React;
+
+/**
+ * EventsPage component
+ * Shows all events with proper formatting and empty state
+ */
+function EventsPage() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  /**
+   * Fetch events from the API
+   */
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('http://localhost:3001/api/events');
+      const data = await response.json();
+
+      if (data.success) {
+        setEvents(data.data || []);
+      } else {
+        setError(data.message || 'Failed to fetch events');
+      }
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to fetch events');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Format date for display
+   * @param {string} dateString - ISO date string
+   * @returns {string} Formatted date
+   */
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  /**
+   * Format time for display
+   * @param {string} timeString - Time string
+   * @returns {string} Formatted time
+   */
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    try {
+      // If it's already in HH:MM format, return as is
+      if (/^\d{2}:\d{2}$/.test(timeString)) {
+        return timeString;
+      }
+      // If it's a full datetime, extract time
+      const date = new Date(timeString);
+      return date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      return timeString;
+    }
+  };
+
+  /**
+   * Get status badge styling
+   * @param {string} status - Event status
+   * @returns {string} CSS classes
+   */
+  const getStatusBadgeClasses = (status) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'completed':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      default:
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+  };
+
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gray-900 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Events</h1>
+          <p className="text-gray-400">
+            View and manage all upcoming and past events
+          </p>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-900 border border-red-700 text-red-100 px-4 py-3 rounded mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-red-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium">Error loading events</h3>
+                <div className="mt-2 text-sm">{error}</div>
+                <div className="mt-4">
+                  <button
+                    onClick={fetchEvents}
+                    className="bg-red-800 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && events.length === 0 && (
+          <div className="text-center py-12">
+            <div className="mx-auto h-24 w-24 text-gray-600 mb-4">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-medium text-white mb-2">
+              No Current Events
+            </h3>
+            <p className="text-gray-400 mb-6">
+              There are no events scheduled at the moment. Check back later!
+            </p>
+            <button
+              onClick={fetchEvents}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
+        )}
+
+        {/* Events List */}
+        {!loading && !error && events.length > 0 && (
+          <div className="space-y-6">
+            {events.map((event) => (
+              <div
+                key={event.eventId}
+                className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-colors"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h3 className="text-xl font-semibold text-white">
+                        {event.eventName}
+                      </h3>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(
+                          event.status
+                        )}`}
+                      >
+                        {event.status}
+                      </span>
+                    </div>
+
+                    {event.description && (
+                      <p className="text-gray-300 mb-3">{event.description}</p>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
+                      <div className="flex items-center text-gray-400">
+                        <svg
+                          className="h-4 w-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span>{formatDate(event.eventDate)}</span>
+                      </div>
+
+                      {(event.startTime || event.endTime) && (
+                        <div className="flex items-center text-gray-400">
+                          <svg
+                            className="h-4 w-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span>
+                            {event.startTime && formatTime(event.startTime)}
+                            {event.startTime && event.endTime && ' - '}
+                            {event.endTime && formatTime(event.endTime)}
+                          </span>
+                        </div>
+                      )}
+
+                      {event.maxParticipants > 0 && (
+                        <div className="flex items-center text-gray-400">
+                          <svg
+                            className="h-4 w-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                            />
+                          </svg>
+                          <span>
+                            {event.currentParticipants || 0} /{' '}
+                            {event.maxParticipants} participants
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 sm:mt-0 sm:ml-6">
+                    <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded transition-colors">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Make EventsPage available globally
+window.EventsPage = EventsPage;

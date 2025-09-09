@@ -1,9 +1,10 @@
-const { useState } = React;
+const { useState, useEffect } = React;
 
 // Main App component
 function App() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState('home');
 
   /**
    * Handle logout
@@ -19,6 +20,44 @@ function App() {
     setShowAuthModal(false);
   };
 
+  /**
+   * Handle navigation
+   */
+  const handleNavigation = (page) => {
+    setCurrentPage(page);
+  };
+
+  /**
+   * Handle browser back/forward navigation
+   */
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash.slice(1) || 'home';
+      setCurrentPage(hash);
+    };
+
+    // Listen for browser navigation
+    window.addEventListener('popstate', handlePopState);
+
+    // Set initial page from URL
+    handlePopState();
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  /**
+   * Update URL when page changes
+   */
+  useEffect(() => {
+    if (currentPage !== 'home') {
+      window.history.pushState(null, '', `#${currentPage}`);
+    } else {
+      window.history.pushState(null, '', '#');
+    }
+  }, [currentPage]);
+
   return (
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-lg border-b border-gray-700">
@@ -28,24 +67,46 @@ function App() {
 
             {/* Navigation */}
             <nav className="hidden md:flex space-x-8">
-              <a
-                href="#"
-                className="text-gray-300 hover:text-white transition-colors"
+              <button
+                onClick={() => handleNavigation('home')}
+                className={`transition-colors ${
+                  currentPage === 'home'
+                    ? 'text-white font-semibold'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Home
+              </button>
+              <button
+                onClick={() => handleNavigation('events')}
+                className={`transition-colors ${
+                  currentPage === 'events'
+                    ? 'text-white font-semibold'
+                    : 'text-gray-300 hover:text-white'
+                }`}
               >
                 Events
-              </a>
-              <a
-                href="#"
-                className="text-gray-300 hover:text-white transition-colors"
+              </button>
+              <button
+                onClick={() => handleNavigation('rooms')}
+                className={`transition-colors ${
+                  currentPage === 'rooms'
+                    ? 'text-white font-semibold'
+                    : 'text-gray-300 hover:text-white'
+                }`}
               >
                 Rooms
-              </a>
-              <a
-                href="#"
-                className="text-gray-300 hover:text-white transition-colors"
+              </button>
+              <button
+                onClick={() => handleNavigation('games')}
+                className={`transition-colors ${
+                  currentPage === 'games'
+                    ? 'text-white font-semibold'
+                    : 'text-gray-300 hover:text-white'
+                }`}
               >
                 Games
-              </a>
+              </button>
             </nav>
 
             {/* Authentication Section */}
@@ -69,14 +130,20 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {isAuthenticated ? (
-            <AuthenticatedContent user={user} />
-          ) : (
-            <HelloWorld onShowAuth={() => setShowAuthModal(true)} />
-          )}
-        </div>
+      <main>
+        {currentPage === 'events' ? (
+          <EventsPage />
+        ) : (
+          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div className="px-4 py-6 sm:px-0">
+              {isAuthenticated ? (
+                <AuthenticatedContent user={user} />
+              ) : (
+                <HelloWorld onShowAuth={() => setShowAuthModal(true)} />
+              )}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Authentication Modal */}

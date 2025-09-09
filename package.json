@@ -9,11 +9,13 @@
     "dev": "concurrently \"npm run dynamodb:start\" \"npm run server\" \"npm run start\"",
     "build": "echo 'Build complete - static files ready for deployment'",
     "test": "echo 'No tests configured yet'",
-    "dynamodb:start": "docker run -d --name dynamodb-local -p 8000:8000 -v $(pwd)/docker/dynamodb:/home/dynamodblocal/data amazon/dynamodb-local:latest -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data",
-    "dynamodb:stop": "docker stop dynamodb-local && docker rm dynamodb-local",
+    "dynamodb:janky-start": "docker run -d --name dynamodb-local -p 8000:8000 -v $(pwd)/docker/dynamodb:/home/dynamodblocal/data amazon/dynamodb-local:latest -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data",
+    "dynamodb:janky-stop": "docker stop dynamodb-local && docker rm dynamodb-local",
     "dynamodb:setup": "node backend/scripts/setup-local.js",
     "dynamodb:test": "node backend/scripts/test-operations.js",
-    "dynamodb:status": "docker ps --filter name=dynamodb-local"
+    "dynamodb:status": "docker ps --filter name=dynamodb-local",
+    "dynamodb:start": "make start-local-dynamodb",
+    "dynamodb:stop": "make stop-local-dynamodb"
   },
   "dependencies": {
     "aws-sdk": "^2.1490.0",
