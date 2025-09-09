@@ -123,9 +123,14 @@ class VenueService {
 
       const result = await dynamodb.scan(params).promise();
 
+      // Sort venues alphabetically by name
+      const sortedVenues = (result.Items || []).sort((a, b) => {
+        return a.venueName.localeCompare(b.venueName);
+      });
+
       return {
         success: true,
-        data: result.Items || [],
+        data: sortedVenues,
         message: 'Venues retrieved successfully',
       };
     } catch (error) {
