@@ -129,9 +129,9 @@ class EventService {
 
       const result = await dynamodb.scan(params).promise();
 
-      // Sort events by date (most recent first)
+      // Sort events by date (soonest to furthest in the future)
       const sortedEvents = (result.Items || []).sort((a, b) => {
-        return new Date(b.eventDate) - new Date(a.eventDate);
+        return new Date(a.eventDate) - new Date(b.eventDate);
       });
 
       return {
