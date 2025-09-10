@@ -235,6 +235,13 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                       >
                         {event.status}
                       </span>
+                      {/* Your Event label - only show if current user created this event */}
+                      {currentUser &&
+                        event.createdBy === currentUser.userId && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white border border-red-700">
+                            Your Event
+                          </span>
+                        )}
                     </div>
 
                     {event.description && (
