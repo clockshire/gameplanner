@@ -26,6 +26,12 @@ async function checkDuplicateUsers() {
 
     console.log(`📊 Found ${users.length} users`);
 
+    // Debug: Log all users
+    console.log('🔍 All users:');
+    users.forEach((user, index) => {
+      console.log(`  ${index + 1}. ${user.email?.S} (${user.userId?.S}) - SK: ${user.SK?.S}`);
+    });
+
     // Group users by email
     const emailGroups = {};
     users.forEach((user) => {

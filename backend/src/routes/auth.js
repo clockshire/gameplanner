@@ -194,4 +194,45 @@ router.get('/me', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/auth/users/:userId
+ * Get user information by ID (for displaying creator info)
+ */
+router.get('/users/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+        code: 'MISSING_USER_ID'
+      });
+    }
+
+    const user = await authService.getUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+        code: 'USER_NOT_FOUND'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    console.error('Get user by ID error:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      code: 'INTERNAL_ERROR'
+    });
+  }
+});
+
 module.exports = router;

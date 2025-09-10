@@ -215,6 +215,38 @@ class AuthService {
   }
 
   /**
+   * Get user by ID
+   * @param {string} userId - User ID
+   * @returns {Promise<Object|null>} User object or null if not found
+   */
+  async getUserById(userId) {
+    try {
+      if (!userId) {
+        return null;
+      }
+
+      const userResult = await dynamodb
+        .get({
+          TableName: 'users',
+          Key: {
+            PK: `USER#${userId}`,
+            SK: 'PROFILE',
+          },
+        })
+        .promise();
+
+      if (!userResult.Item) {
+        return null;
+      }
+
+      return this.sanitizeUser(userResult.Item);
+    } catch (error) {
+      console.error('Get user by ID error:', error);
+      return null;
+    }
+  }
+
+  /**
    * Get user by email address
    * @param {string} email - User's email address
    * @returns {Promise<Object|null>} User object or null if not found
@@ -226,13 +258,37 @@ class AuthService {
           TableName: 'users',
           IndexName: 'EmailIndex',
           KeyConditionExpression: 'email = :email',
+          FilterExpression: 'SK = :sk', // Only get USER records, not SESSION records
           ExpressionAttributeValues: {
             ':email': email.toLowerCase(),
+            ':sk': 'PROFILE',
           },
         })
         .promise();
 
-      return result.Items && result.Items.length > 0 ? result.Items[0] : null;
+      if (!result.Items || result.Items.length === 0) {
+        return null;
+      }
+
+      // If there are multiple users with the same email, return the active one
+      // or the most recently created one if multiple are active
+      const activeUsers = result.Items.filter(
+        (user) => user.isActive?.BOOL === true
+      );
+
+      if (activeUsers.length > 0) {
+        // Sort by creation date (most recent first) and return the first one
+        activeUsers.sort(
+          (a, b) => new Date(b.createdAt?.S) - new Date(a.createdAt?.S)
+        );
+        return activeUsers[0];
+      }
+
+      // If no active users, return the most recently created one
+      result.Items.sort(
+        (a, b) => new Date(b.createdAt?.S) - new Date(a.createdAt?.S)
+      );
+      return result.Items[0];
     } catch (error) {
       console.error('Get user by email error:', error);
       return null;

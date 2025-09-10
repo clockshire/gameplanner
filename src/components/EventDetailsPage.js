@@ -12,6 +12,7 @@ const { useState, useEffect } = React;
 function EventDetailsPage({ eventId, onBack }) {
   const [event, setEvent] = useState(null);
   const [venue, setVenue] = useState(null);
+  const [creator, setCreator] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -33,6 +34,10 @@ function EventDetailsPage({ eventId, onBack }) {
         // If event has a venue, fetch venue details
         if (data.data.venueId) {
           await fetchVenueDetails(data.data.venueId);
+        }
+        // If event has a creator, fetch creator details
+        if (data.data.createdBy) {
+          await fetchCreatorDetails(data.data.createdBy);
         }
       } else {
         setError(data.message || 'Failed to fetch event details');
@@ -63,6 +68,27 @@ function EventDetailsPage({ eventId, onBack }) {
       }
     } catch (err) {
       console.warn('Error fetching venue details:', err);
+    }
+  };
+
+  /**
+   * Fetch creator details from the API
+   * @param {string} creatorId - Creator user ID
+   */
+  const fetchCreatorDetails = async (creatorId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/auth/users/${creatorId}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setCreator(data.data);
+      } else {
+        console.warn('Failed to fetch creator details:', data.message);
+      }
+    } catch (err) {
+      console.warn('Error fetching creator details:', err);
     }
   };
 
@@ -247,6 +273,13 @@ function EventDetailsPage({ eventId, onBack }) {
                   Created {new Date(event.createdAt).toLocaleDateString()}
                 </span>
               </div>
+              {creator && (
+                <div className="mt-2">
+                  <span className="text-gray-400 text-sm">
+                    Created by: <span className="text-white font-medium">{creator.email}</span>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

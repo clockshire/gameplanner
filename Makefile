@@ -27,6 +27,9 @@ scan-users:
 check-duplicate-users:
 	@cd backend && node scripts/check-duplicate-users.js
 
+cleanup-duplicate-users:
+	@cd backend && node scripts/cleanup-duplicate-users.js
+
 update-events-createdby:
 	@echo "Usage: make update-events-createdby USER_ID=<userId>"
 	@echo "Example: make update-events-createdby USER_ID=a6f3aec2-7d19-48d5-85a4-7602da37e79f"
