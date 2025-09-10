@@ -9,6 +9,8 @@ function App() {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
   const [showEditEventModal, setShowEditEventModal] = useState(false);
+  const [deletingEvent, setDeletingEvent] = useState(null);
+  const [showDeleteEventModal, setShowDeleteEventModal] = useState(false);
 
   /**
    * Handle logout
@@ -99,6 +101,33 @@ function App() {
       // The EventDetailsPage will refresh when it re-renders
       window.location.reload();
     }
+  };
+
+  /**
+   * Handle delete event
+   */
+  const handleDeleteEvent = (event) => {
+    setDeletingEvent(event);
+    setShowDeleteEventModal(true);
+  };
+
+  /**
+   * Handle close delete event modal
+   */
+  const handleCloseDeleteEventModal = () => {
+    setDeletingEvent(null);
+    setShowDeleteEventModal(false);
+  };
+
+  /**
+   * Handle event deleted
+   */
+  const handleEventDeleted = (deletedEvent) => {
+    // Close the modal
+    handleCloseDeleteEventModal();
+    // Navigate back to events list
+    setSelectedEventId(null);
+    setCurrentPage('events');
   };
 
   /**
@@ -234,6 +263,7 @@ function App() {
             onBack={handleBackFromEventDetails}
             currentUser={user}
             onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
           />
         ) : currentPage === 'venues' ? (
           <VenuesPage
@@ -273,6 +303,14 @@ function App() {
         onClose={handleCloseEditEventModal}
         onEventUpdated={handleEventUpdated}
         currentUser={user}
+      />
+
+      {/* Delete Event Modal */}
+      <DeleteEventModal
+        event={deletingEvent}
+        isOpen={showDeleteEventModal}
+        onClose={handleCloseDeleteEventModal}
+        onEventDeleted={handleEventDeleted}
       />
     </div>
   );
