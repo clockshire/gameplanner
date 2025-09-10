@@ -193,7 +193,10 @@ function App() {
 
       <main>
         {currentPage === 'events' ? (
-          <EventsPage onViewEventDetails={handleViewEventDetails} />
+          <EventsPage
+            onViewEventDetails={handleViewEventDetails}
+            currentUser={user}
+          />
         ) : currentPage.startsWith('event-details/') && selectedEventId ? (
           <EventDetailsPage
             eventId={selectedEventId}

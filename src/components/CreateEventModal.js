@@ -9,7 +9,7 @@ const { useState, useEffect } = React;
  * CreateEventModal component
  * Handles event creation with form validation
  */
-function CreateEventModal({ isOpen, onClose, onEventCreated }) {
+function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -72,6 +72,7 @@ function CreateEventModal({ isOpen, onClose, onEventCreated }) {
         maxParticipants: formData.maxParticipants
           ? parseInt(formData.maxParticipants)
           : 0,
+        createdBy: currentUser?.userId, // Add current user ID
       };
 
       const response = await fetch('http://localhost:3001/api/events', {

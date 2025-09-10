@@ -9,7 +9,7 @@ const { useState, useEffect } = React;
  * EventsPage component
  * Shows all events with proper formatting and empty state
  */
-function EventsPage({ onViewEventDetails }) {
+function EventsPage({ onViewEventDetails, currentUser }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -325,6 +325,7 @@ function EventsPage({ onViewEventDetails }) {
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onEventCreated={handleEventCreated}
+          currentUser={currentUser}
         />
       </div>
     </div>

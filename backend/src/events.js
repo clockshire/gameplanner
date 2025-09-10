@@ -25,6 +25,7 @@ class EventService {
    * @param {string} eventData.endTime - Event end time
    * @param {string} eventData.venueId - Associated venue ID
    * @param {number} eventData.maxParticipants - Maximum participants
+   * @param {string} eventData.createdBy - User ID who created the event
    * @returns {Promise<Object>} Created event
    */
   async createEvent(eventData) {
@@ -45,6 +46,7 @@ class EventService {
         maxParticipants: eventData.maxParticipants || 0,
         currentParticipants: 0,
         status: 'active',
+        createdBy: eventData.createdBy || null, // User ID who created the event
         createdAt: now,
         updatedAt: now,
         entityType: 'EVENT',

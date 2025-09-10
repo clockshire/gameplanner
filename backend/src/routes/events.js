@@ -23,6 +23,7 @@ router.post('/', async (req, res) => {
       endTime,
       venueId,
       maxParticipants,
+      createdBy,
     } = req.body;
 
     // Validate required fields
@@ -42,6 +43,14 @@ router.post('/', async (req, res) => {
       });
     }
 
+    if (!createdBy) {
+      return res.status(400).json({
+        success: false,
+        error: 'Created by user ID is required',
+        message: 'Created by user ID is required',
+      });
+    }
+
     const result = await eventService.createEvent({
       name,
       description,
@@ -50,6 +59,7 @@ router.post('/', async (req, res) => {
       endTime,
       venueId,
       maxParticipants,
+      createdBy,
     });
 
     if (result.success) {

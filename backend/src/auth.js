@@ -23,8 +23,11 @@ class AuthService {
         throw new Error('Invalid email format');
       }
 
+      // Normalize email to lowercase for consistent checking
+      const normalizedEmail = email.toLowerCase();
+
       // Check if user already exists
-      const existingUser = await this.getUserByEmail(email);
+      const existingUser = await this.getUserByEmail(normalizedEmail);
       if (existingUser) {
         throw new Error('User with this email already exists');
       }
@@ -35,19 +38,21 @@ class AuthService {
         PK: `USER#${userId}`,
         SK: 'PROFILE',
         userId,
-        email: email.toLowerCase(),
-        name: name || email.split('@')[0],
+        email: normalizedEmail, // Use normalized email
+        name: name || normalizedEmail.split('@')[0],
         createdAt: new Date().toISOString(),
         lastLoginAt: new Date().toISOString(),
         isActive: true,
       };
 
       // Save user to DynamoDB
-      await dynamodb.put({
-        TableName: 'users',
-        Item: user,
-        ConditionExpression: 'attribute_not_exists(PK)', // Prevent overwrites
-      }).promise();
+      await dynamodb
+        .put({
+          TableName: 'users',
+          Item: user,
+          ConditionExpression: 'attribute_not_exists(PK)', // Prevent overwrites
+        })
+        .promise();
 
       // Return user without sensitive data
       return this.sanitizeUser(user);
@@ -69,8 +74,11 @@ class AuthService {
         throw new Error('Invalid email format');
       }
 
+      // Normalize email to lowercase for consistent checking
+      const normalizedEmail = email.toLowerCase();
+
       // Find user by email
-      const user = await this.getUserByEmail(email);
+      const user = await this.getUserByEmail(normalizedEmail);
       if (!user) {
         throw new Error('User not found');
       }
@@ -80,33 +88,37 @@ class AuthService {
       }
 
       // Update last login time
-      await dynamodb.update({
-        TableName: 'users',
-        Key: {
-          PK: user.PK,
-          SK: user.SK,
-        },
-        UpdateExpression: 'SET lastLoginAt = :lastLoginAt',
-        ExpressionAttributeValues: {
-          ':lastLoginAt': new Date().toISOString(),
-        },
-      }).promise();
+      await dynamodb
+        .update({
+          TableName: 'users',
+          Key: {
+            PK: user.PK,
+            SK: user.SK,
+          },
+          UpdateExpression: 'SET lastLoginAt = :lastLoginAt',
+          ExpressionAttributeValues: {
+            ':lastLoginAt': new Date().toISOString(),
+          },
+        })
+        .promise();
 
       // Generate session token (simple UUID for local dev)
       const sessionToken = uuidv4();
 
       // Store session (in production, this would be in Redis or similar)
-      await dynamodb.put({
-        TableName: 'users',
-        Item: {
-          PK: `SESSION#${sessionToken}`,
-          SK: 'ACTIVE',
-          userId: user.userId,
-          email: user.email,
-          createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-        },
-      }).promise();
+      await dynamodb
+        .put({
+          TableName: 'users',
+          Item: {
+            PK: `SESSION#${sessionToken}`,
+            SK: 'ACTIVE',
+            userId: user.userId,
+            email: user.email,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+          },
+        })
+        .promise();
 
       return {
         user: this.sanitizeUser(user),
@@ -130,13 +142,15 @@ class AuthService {
       }
 
       // Remove session from DynamoDB
-      await dynamodb.delete({
-        TableName: 'users',
-        Key: {
-          PK: `SESSION#${sessionToken}`,
-          SK: 'ACTIVE',
-        },
-      }).promise();
+      await dynamodb
+        .delete({
+          TableName: 'users',
+          Key: {
+            PK: `SESSION#${sessionToken}`,
+            SK: 'ACTIVE',
+          },
+        })
+        .promise();
 
       return true;
     } catch (error) {
@@ -157,13 +171,15 @@ class AuthService {
       }
 
       // Get session
-      const sessionResult = await dynamodb.get({
-        TableName: 'users',
-        Key: {
-          PK: `SESSION#${sessionToken}`,
-          SK: 'ACTIVE',
-        },
-      }).promise();
+      const sessionResult = await dynamodb
+        .get({
+          TableName: 'users',
+          Key: {
+            PK: `SESSION#${sessionToken}`,
+            SK: 'ACTIVE',
+          },
+        })
+        .promise();
 
       if (!sessionResult.Item) {
         return null;
@@ -177,13 +193,15 @@ class AuthService {
       }
 
       // Get user details
-      const userResult = await dynamodb.get({
-        TableName: 'users',
-        Key: {
-          PK: `USER#${sessionResult.Item.userId}`,
-          SK: 'PROFILE',
-        },
-      }).promise();
+      const userResult = await dynamodb
+        .get({
+          TableName: 'users',
+          Key: {
+            PK: `USER#${sessionResult.Item.userId}`,
+            SK: 'PROFILE',
+          },
+        })
+        .promise();
 
       if (!userResult.Item || !userResult.Item.isActive) {
         return null;
@@ -203,14 +221,16 @@ class AuthService {
    */
   async getUserByEmail(email) {
     try {
-      const result = await dynamodb.query({
-        TableName: 'users',
-        IndexName: 'EmailIndex',
-        KeyConditionExpression: 'email = :email',
-        ExpressionAttributeValues: {
-          ':email': email.toLowerCase(),
-        },
-      }).promise();
+      const result = await dynamodb
+        .query({
+          TableName: 'users',
+          IndexName: 'EmailIndex',
+          KeyConditionExpression: 'email = :email',
+          ExpressionAttributeValues: {
+            ':email': email.toLowerCase(),
+          },
+        })
+        .promise();
 
       return result.Items && result.Items.length > 0 ? result.Items[0] : null;
     } catch (error) {
