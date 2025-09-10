@@ -14,7 +14,9 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
     name: '',
     description: '',
     address: '',
-    contactInfo: '',
+    contactPhone: '',
+    contactEmail: '',
+    websiteURL: '',
     capacity: '',
     mapLink: '',
   });
@@ -48,7 +50,9 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
         name: formData.name,
         description: formData.description,
         address: formData.address,
-        contactInfo: formData.contactInfo,
+        contactPhone: formData.contactPhone || null,
+        contactEmail: formData.contactEmail || null,
+        websiteURL: formData.websiteURL || null,
         capacity: formData.capacity ? parseInt(formData.capacity) : 0,
         mapLink: formData.mapLink || null,
       };
@@ -218,22 +222,60 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
               />
             </div>
 
-            {/* Contact Info */}
+            {/* Contact Phone */}
             <div>
               <label
-                htmlFor="contactInfo"
+                htmlFor="contactPhone"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
-                Contact Information
+                Contact Phone
               </label>
               <input
-                type="text"
-                id="contactInfo"
-                name="contactInfo"
-                value={formData.contactInfo}
+                type="tel"
+                id="contactPhone"
+                name="contactPhone"
+                value={formData.contactPhone}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Phone, email, or contact person"
+                placeholder="+44 113 343 8877"
+              />
+            </div>
+
+            {/* Contact Email */}
+            <div>
+              <label
+                htmlFor="contactEmail"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                Contact Email
+              </label>
+              <input
+                type="email"
+                id="contactEmail"
+                name="contactEmail"
+                value={formData.contactEmail}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="contact@venue.com"
+              />
+            </div>
+
+            {/* Website URL */}
+            <div>
+              <label
+                htmlFor="websiteURL"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                Website URL
+              </label>
+              <input
+                type="url"
+                id="websiteURL"
+                name="websiteURL"
+                value={formData.websiteURL}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="https://www.venue.com"
               />
             </div>
 

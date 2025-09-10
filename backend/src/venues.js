@@ -21,7 +21,9 @@ class VenueService {
    * @param {string} venueData.name - Venue name
    * @param {string} venueData.description - Venue description
    * @param {string} venueData.address - Venue address
-   * @param {string} venueData.contactInfo - Contact information
+   * @param {string} venueData.contactPhone - Contact phone number
+   * @param {string} venueData.contactEmail - Contact email address
+   * @param {string} venueData.websiteURL - Website URL
    * @param {number} venueData.capacity - Maximum capacity
    * @param {string} venueData.mapLink - Optional map link (e.g., Google Maps)
    * @returns {Promise<Object>} Created venue
@@ -38,7 +40,9 @@ class VenueService {
         venueName: venueData.name,
         description: venueData.description || '',
         address: venueData.address || '',
-        contactInfo: venueData.contactInfo || '',
+        contactPhone: venueData.contactPhone || null,
+        contactEmail: venueData.contactEmail || null,
+        websiteURL: venueData.websiteURL || null,
         capacity: venueData.capacity || 0,
         mapLink: venueData.mapLink || null,
         createdAt: now,

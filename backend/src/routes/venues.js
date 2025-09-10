@@ -15,7 +15,7 @@ const venueService = new VenueService();
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, description, address, contactInfo, capacity, mapLink } =
+    const { name, description, address, contactPhone, contactEmail, websiteURL, capacity, mapLink } =
       req.body;
 
     // Validate required fields
@@ -31,7 +31,9 @@ router.post('/', async (req, res) => {
       name,
       description,
       address,
-      contactInfo,
+      contactPhone,
+      contactEmail,
+      websiteURL,
       capacity,
       mapLink,
     });
