@@ -207,6 +207,63 @@ function EventDetailsPage({
   };
 
   /**
+   * Format event start and end with times for clear display
+   * @param {Object} event - Event object
+   * @returns {Object} Object with start and end formatted strings
+   */
+  const formatEventStartEnd = (event) => {
+    try {
+      const startDate = new Date(event.eventDate);
+      const endDate = new Date(event.endDate || event.eventDate);
+
+      const startFormatted = startDate.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      const endFormatted = endDate.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      const startTime = event.startTime ? formatTime(event.startTime) : '';
+      const endTime = event.endTime ? formatTime(event.endTime) : '';
+
+      const startText =
+        'Event Start: ' +
+        startFormatted +
+        (startTime ? ' at ' + startTime : '');
+      const endText =
+        'Event End: ' + endFormatted + (endTime ? ' at ' + endTime : '');
+
+      return {
+        start: startText,
+        end: endText,
+        isMultiDay: startDate.toDateString() !== endDate.toDateString(),
+      };
+    } catch (error) {
+      const startText =
+        'Event Start: ' +
+        formatDate(event.eventDate) +
+        (event.startTime ? ' at ' + formatTime(event.startTime) : '');
+      const endText =
+        'Event End: ' +
+        formatDate(event.eventDate) +
+        (event.endTime ? ' at ' + formatTime(event.endTime) : '');
+
+      return {
+        start: startText,
+        end: endText,
+        isMultiDay: false,
+      };
+    }
+  };
+
+  /**
    * Format time for display
    * @param {string} timeString - Time string
    * @returns {string} Formatted time
@@ -477,52 +534,50 @@ function EventDetailsPage({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-400 mb-2">
-                    Date & Time
+                    Event Schedule
                   </h3>
                   <div className="space-y-2">
-                    <div className="flex items-center text-gray-300">
-                      <svg
-                        className="h-4 w-4 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <span>
-                        {formatDateRange(
-                          event.eventDate,
-                          event.endDate || event.eventDate
-                        )}
-                      </span>
-                    </div>
-                    {(event.startTime || event.endTime) && (
-                      <div className="flex items-center text-gray-300">
-                        <svg
-                          className="h-4 w-4 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <span>
-                          {event.startTime && formatTime(event.startTime)}
-                          {event.startTime && event.endTime && ' - '}
-                          {event.endTime && formatTime(event.endTime)}
-                        </span>
-                      </div>
-                    )}
+                    {(() => {
+                      const eventTimes = formatEventStartEnd(event);
+                      return (
+                        <>
+                          <div className="flex items-center text-gray-300">
+                            <svg
+                              className="h-4 w-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            <span>{eventTimes.start}</span>
+                          </div>
+                          {eventTimes.isMultiDay && (
+                            <div className="flex items-center text-gray-300">
+                              <svg
+                                className="h-4 w-4 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <span>{eventTimes.end}</span>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
