@@ -9,6 +9,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const venueRoutes = require('./routes/venues');
 const eventRoutes = require('./routes/events');
+const roomRoutes = require('./routes/rooms');
 const { testConnection, createTableIfNotExists } = require('./dynamodb');
 const {
   usersTableSchema,
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/venues', venueRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
