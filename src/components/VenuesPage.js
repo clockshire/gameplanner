@@ -14,6 +14,7 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [venueRooms, setVenueRooms] = useState({});
 
   /**
    * Fetch venues from the API
@@ -28,6 +29,8 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
 
       if (data.success) {
         setVenues(data.data || []);
+        // Fetch rooms for each venue
+        fetchRoomsForVenues(data.data || []);
       } else {
         setError(data.message || 'Failed to fetch venues');
       }
@@ -37,6 +40,57 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * Fetch rooms for all venues
+   * @param {Array} venues - Array of venue objects
+   */
+  const fetchRoomsForVenues = async (venues) => {
+    const roomsData = {};
+
+    for (const venue of venues) {
+      try {
+        const response = await fetch(
+          `http://localhost:3001/api/rooms/venue/${venue.venueId}`
+        );
+        const data = await response.json();
+
+        if (data.success) {
+          roomsData[venue.venueId] = data.data || [];
+        } else {
+          console.warn(
+            `Failed to fetch rooms for venue ${venue.venueId}:`,
+            data.message
+          );
+          roomsData[venue.venueId] = [];
+        }
+      } catch (err) {
+        console.warn(`Error fetching rooms for venue ${venue.venueId}:`, err);
+        roomsData[venue.venueId] = [];
+      }
+    }
+
+    setVenueRooms(roomsData);
+  };
+
+  /**
+   * Calculate room summary for a venue
+   * @param {string} venueId - Venue ID
+   * @returns {Object} Room summary with count and total capacity
+   */
+  const getRoomSummary = (venueId) => {
+    const rooms = venueRooms[venueId] || [];
+    const totalCapacity = rooms.reduce(
+      (sum, room) => sum + (room.capacity || 0),
+      0
+    );
+
+    return {
+      count: rooms.length,
+      totalCapacity: totalCapacity,
+      rooms: rooms,
+    };
   };
 
   /**
@@ -280,6 +334,61 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
                           <span>Capacity: {venue.capacity} people</span>
                         </div>
                       )}
+
+                      {/* Room Summary */}
+                      {(() => {
+                        const roomSummary = getRoomSummary(venue.venueId);
+                        if (roomSummary.count > 0) {
+                          return (
+                            <div className="flex items-center">
+                              <svg
+                                className="h-4 w-4 mr-2 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                />
+                              </svg>
+                              <div className="flex flex-wrap gap-1">
+                                {roomSummary.rooms.map((room, index) => (
+                                  <span
+                                    key={index}
+                                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700"
+                                  >
+                                    {room.roomName} ({room.capacity} 👥)
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="flex items-center">
+                              <svg
+                                className="h-4 w-4 mr-2 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                />
+                              </svg>
+                              <span className="text-gray-500 text-sm">
+                                No rooms added yet
+                              </span>
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
                   </div>
 
