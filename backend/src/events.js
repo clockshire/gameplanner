@@ -130,9 +130,33 @@ class EventService {
       };
 
       const result = await dynamodb.scan(params).promise();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Start of today
+
+      // Process events to update status for past events
+      const processedEvents = [];
+      const eventsToUpdate = [];
+
+      for (const event of result.Items || []) {
+        const eventDate = new Date(event.eventDate);
+        eventDate.setHours(0, 0, 0, 0); // Start of event date
+
+        // If event is in the past and still marked as active, update it
+        if (eventDate < today && event.status === 'active') {
+          event.status = 'completed';
+          eventsToUpdate.push(event);
+        }
+
+        processedEvents.push(event);
+      }
+
+      // Update past events in the database
+      if (eventsToUpdate.length > 0) {
+        await this.updatePastEvents(eventsToUpdate);
+      }
 
       // Sort events by date (soonest to furthest in the future)
-      const sortedEvents = (result.Items || []).sort((a, b) => {
+      const sortedEvents = processedEvents.sort((a, b) => {
         return new Date(a.eventDate) - new Date(b.eventDate);
       });
 
@@ -148,6 +172,43 @@ class EventService {
         error: error.message,
         message: 'Failed to get events',
       };
+    }
+  }
+
+  /**
+   * Update past events to completed status
+   * @param {Array} events - Array of events to update
+   * @returns {Promise<void>}
+   */
+  async updatePastEvents(events) {
+    try {
+      const updatePromises = events.map(async (event) => {
+        const now = new Date().toISOString();
+
+        const params = {
+          TableName: this.tableName,
+          Key: {
+            PK: event.PK,
+            SK: event.SK,
+          },
+          UpdateExpression: 'SET #status = :status, #updatedAt = :updatedAt',
+          ExpressionAttributeNames: {
+            '#status': 'status',
+            '#updatedAt': 'updatedAt',
+          },
+          ExpressionAttributeValues: {
+            ':status': 'completed',
+            ':updatedAt': now,
+          },
+        };
+
+        await dynamodb.update(params).promise();
+      });
+
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error('Error updating past events:', error);
+      // Don't throw error here as we don't want to break the main flow
     }
   }
 
