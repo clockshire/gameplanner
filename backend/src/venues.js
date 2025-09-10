@@ -23,6 +23,7 @@ class VenueService {
    * @param {string} venueData.address - Venue address
    * @param {string} venueData.contactInfo - Contact information
    * @param {number} venueData.capacity - Maximum capacity
+   * @param {string} venueData.mapLink - Optional map link (e.g., Google Maps)
    * @returns {Promise<Object>} Created venue
    */
   async createVenue(venueData) {
@@ -39,6 +40,7 @@ class VenueService {
         address: venueData.address || '',
         contactInfo: venueData.contactInfo || '',
         capacity: venueData.capacity || 0,
+        mapLink: venueData.mapLink || null,
         createdAt: now,
         updatedAt: now,
         entityType: 'VENUE',

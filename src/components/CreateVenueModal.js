@@ -16,6 +16,7 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
     address: '',
     contactInfo: '',
     capacity: '',
+    mapLink: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -49,6 +50,7 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
         address: formData.address,
         contactInfo: formData.contactInfo,
         capacity: formData.capacity ? parseInt(formData.capacity) : 0,
+        mapLink: formData.mapLink || null,
       };
 
       const response = await fetch('http://localhost:3001/api/venues', {
@@ -253,6 +255,28 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter maximum capacity (0 for unlimited)"
               />
+            </div>
+
+            {/* Map Link */}
+            <div>
+              <label
+                htmlFor="mapLink"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                Map Link (Optional)
+              </label>
+              <input
+                type="url"
+                id="mapLink"
+                name="mapLink"
+                value={formData.mapLink}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="https://maps.app.goo.gl/..."
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Google Maps or other map service link
+              </p>
             </div>
 
             {/* Form Actions */}

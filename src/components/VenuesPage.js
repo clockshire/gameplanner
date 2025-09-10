@@ -291,7 +291,18 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
                               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                             />
                           </svg>
-                          <span className="break-words">{venue.address}</span>
+                          {venue.mapLink ? (
+                            <a
+                              href={venue.mapLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-300 break-words underline"
+                            >
+                              {venue.address}
+                            </a>
+                          ) : (
+                            <span className="break-words">{venue.address}</span>
+                          )}
                         </div>
                       )}
 

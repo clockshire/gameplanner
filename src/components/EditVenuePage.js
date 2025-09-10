@@ -16,6 +16,7 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
     address: '',
     contactInfo: '',
     capacity: '',
+    mapLink: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,6 +46,7 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
           address: venue.address || '',
           contactInfo: venue.contactInfo || '',
           capacity: venue.capacity || '',
+          mapLink: venue.mapLink || '',
         });
       } else {
         setError(data.message || 'Failed to fetch venue');
@@ -63,7 +65,9 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
   const fetchRooms = async () => {
     try {
       setRoomsLoading(true);
-      const response = await fetch(`http://localhost:3001/api/rooms/venue/${venueId}`);
+      const response = await fetch(
+        `http://localhost:3001/api/rooms/venue/${venueId}`
+      );
       const data = await response.json();
 
       if (data.success) {
@@ -93,9 +97,12 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/rooms/${roomId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `http://localhost:3001/api/rooms/${roomId}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       const result = await response.json();
 
@@ -139,6 +146,7 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
         address: formData.address,
         contactInfo: formData.contactInfo,
         capacity: formData.capacity ? parseInt(formData.capacity) : 0,
+        mapLink: formData.mapLink || null,
       };
 
       const response = await fetch(
@@ -348,6 +356,28 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
               />
             </div>
 
+            {/* Map Link */}
+            <div>
+              <label
+                htmlFor="mapLink"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                Map Link (Optional)
+              </label>
+              <input
+                type="url"
+                id="mapLink"
+                name="mapLink"
+                value={formData.mapLink}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="https://maps.app.goo.gl/..."
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Google Maps or other map service link
+              </p>
+            </div>
+
             {/* Form Actions */}
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
               <button
@@ -438,7 +468,12 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
                       className="text-red-400 hover:text-red-300 transition-colors"
                       title="Delete room"
                     >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -450,7 +485,9 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
                   </div>
 
                   {room.description && (
-                    <p className="text-gray-300 text-sm mb-3">{room.description}</p>
+                    <p className="text-gray-300 text-sm mb-3">
+                      {room.description}
+                    </p>
                   )}
 
                   <div className="space-y-2 text-sm text-gray-400">
@@ -464,23 +501,24 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
                         <span>{room.capacity} people</span>
                       </div>
                     )}
-                    {room.amenities && Object.keys(room.amenities).length > 0 && (
-                      <div>
-                        <span className="font-medium mr-2">Amenities:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {Object.entries(room.amenities)
-                            .filter(([_, value]) => value)
-                            .map(([key, _]) => (
-                              <span
-                                key={key}
-                                className="bg-gray-600 text-gray-200 px-2 py-1 rounded text-xs capitalize"
-                              >
-                                {key.replace(/([A-Z])/g, ' $1').trim()}
-                              </span>
-                            ))}
+                    {room.amenities &&
+                      Object.keys(room.amenities).length > 0 && (
+                        <div>
+                          <span className="font-medium mr-2">Amenities:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {Object.entries(room.amenities)
+                              .filter(([_, value]) => value)
+                              .map(([key, _]) => (
+                                <span
+                                  key={key}
+                                  className="bg-gray-600 text-gray-200 px-2 py-1 rounded text-xs capitalize"
+                                >
+                                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                                </span>
+                              ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </div>
               ))}
