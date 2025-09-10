@@ -34,8 +34,22 @@ router.get('/:eventId/rooms', async (req, res) => {
 router.post('/:eventId/rooms', async (req, res) => {
   try {
     const { eventId } = req.params;
-    const { roomName, capacity, description, availableTimes, createdBy } =
-      req.body;
+    const {
+      roomId,
+      roomName,
+      capacity,
+      description,
+      availableTimes,
+      createdBy,
+    } = req.body;
+
+    if (!roomId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Room ID is required',
+        message: 'Room ID is required',
+      });
+    }
 
     if (!roomName || !roomName.trim()) {
       return res.status(400).json({
@@ -55,6 +69,7 @@ router.post('/:eventId/rooms', async (req, res) => {
 
     const result = await eventRoomService.createEventRoom({
       eventId,
+      roomId,
       roomName: roomName.trim(),
       capacity: capacity ? parseInt(capacity) : null,
       description: description ? description.trim() : null,

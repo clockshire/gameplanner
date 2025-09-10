@@ -74,14 +74,25 @@ function ManageEventRoomsModal({
 
       if (data.success) {
         const assignments = data.data || [];
-        setSelectedRooms(assignments.map((room) => room.roomId));
+        console.log('Fetched room assignments:', assignments);
+
+        // Map room assignments to selected rooms
+        const roomIds = assignments
+          .map((room) => room.roomId)
+          .filter((id) => id !== 'undefined');
+        setSelectedRooms(roomIds);
 
         // Set up room times
         const times = {};
         assignments.forEach((room) => {
-          times[room.roomId] = room.availableTimes || [];
+          if (room.roomId && room.roomId !== 'undefined') {
+            times[room.roomId] = room.availableTimes || [];
+          }
         });
         setRoomTimes(times);
+
+        console.log('Selected rooms:', roomIds);
+        console.log('Room times:', times);
       } else {
         console.error('Failed to fetch event room assignments:', data.message);
         setSelectedRooms([]);
@@ -123,50 +134,47 @@ function ManageEventRoomsModal({
       setError(null);
 
       // First, clear existing assignments
-      const clearResponse = await fetch(
-        `http://localhost:3001/api/events/${event.eventId}/rooms`,
-        {
-          method: 'DELETE',
-        }
-      );
+      await fetch(`http://localhost:3001/api/events/${event.eventId}/rooms`, {
+        method: 'DELETE',
+      });
 
-      // Then add new assignments
-      const assignments = [];
+      // Prepare room assignments for bulk update
+      const roomAssignments = [];
       for (const roomId of selectedRooms) {
         const room = venueRooms.find((r) => r.roomId === roomId);
         if (room) {
           const availableTimes = roomTimes[roomId] || [];
-          if (availableTimes.length > 0) {
-            const roomData = {
-              roomId: roomId,
-              roomName: room.roomName,
-              capacity: room.capacity,
-              description: room.description,
-              availableTimes: availableTimes,
-              eventId: event.eventId,
-              createdBy: currentUser?.userId,
-            };
-
-            const response = await fetch(
-              `http://localhost:3001/api/events/${event.eventId}/rooms`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(roomData),
-              }
-            );
-
-            const data = await response.json();
-            if (data.success) {
-              assignments.push(data.data);
-            }
-          }
+          // Save room even if no time slots - user can add them later
+          const roomData = {
+            roomId: roomId,
+            roomName: room.roomName,
+            capacity: room.capacity,
+            description: room.description,
+            availableTimes: availableTimes,
+            createdBy: currentUser?.userId,
+          };
+          roomAssignments.push(roomData);
         }
       }
 
-      onRoomsUpdated();
+      // Use bulk update endpoint
+      const response = await fetch(
+        `http://localhost:3001/api/events/${event.eventId}/rooms`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ rooms: roomAssignments }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        onRoomsUpdated();
+      } else {
+        setError(data.message || 'Failed to save room assignments');
+      }
     } catch (err) {
       setError('Error saving room assignments: ' + err.message);
     } finally {
@@ -454,7 +462,7 @@ function ManageEventRoomsModal({
                 {loading
                   ? 'Saving...'
                   : `Save ${selectedRooms.length} Room${
-                      selectedRooms.length > 1 ? 's' : ''
+                      selectedRooms.length !== 1 ? 's' : ''
                     }`}
               </button>
             </div>
