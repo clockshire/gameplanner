@@ -15,6 +15,7 @@ const {
   usersTableSchema,
   venuesTableSchema,
   eventsTableSchema,
+  roomsTableSchema,
 } = require('./schemas');
 
 const app = express();
@@ -119,6 +120,18 @@ async function startServer() {
 
     if (!eventsTableCreated) {
       console.error('❌ Failed to create events table');
+      process.exit(1);
+    }
+
+    // Create rooms table if it doesn't exist
+    console.log('📝 Ensuring rooms table exists...');
+    const roomsTableCreated = await createTableIfNotExists(
+      'rooms',
+      roomsTableSchema
+    );
+
+    if (!roomsTableCreated) {
+      console.error('❌ Failed to create rooms table');
       process.exit(1);
     }
 
