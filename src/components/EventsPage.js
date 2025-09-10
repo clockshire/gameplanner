@@ -67,6 +67,42 @@ function EventsPage({ onViewEventDetails, currentUser }) {
   };
 
   /**
+   * Format date range for display
+   * @param {string} startDate - Start date ISO string
+   * @param {string} endDate - End date ISO string
+   * @returns {string} Formatted date range
+   */
+  const formatDateRange = (startDate, endDate) => {
+    try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      // If same date, show single date
+      if (start.toDateString() === end.toDateString()) {
+        return formatDate(startDate);
+      }
+
+      // If different dates, show range
+      const startFormatted = start.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+      });
+
+      const endFormatted = end.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      return `${startFormatted} - ${endFormatted}`;
+    } catch (error) {
+      return formatDate(startDate);
+    }
+  };
+
+  /**
    * Format time for display
    * @param {string} timeString - Time string
    * @returns {string} Formatted time
@@ -271,7 +307,12 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                 />
                               </svg>
-                              <span>{formatDate(event.eventDate)}</span>
+                              <span>
+                                {formatDateRange(
+                                  event.eventDate,
+                                  event.endDate || event.eventDate
+                                )}
+                              </span>
                             </div>
 
                             {(event.startTime || event.endTime) && (
@@ -406,7 +447,12 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                   />
                                 </svg>
-                                <span>{formatDate(event.eventDate)}</span>
+                                <span>
+                                  {formatDateRange(
+                                    event.eventDate,
+                                    event.endDate || event.eventDate
+                                  )}
+                                </span>
                               </div>
 
                               {(event.startTime || event.endTime) && (

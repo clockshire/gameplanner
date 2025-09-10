@@ -14,6 +14,7 @@ function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
     name: '',
     description: '',
     eventDate: '',
+    endDate: '',
     startTime: '',
     endTime: '',
     venueId: '',
@@ -66,6 +67,7 @@ function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
         name: formData.name,
         description: formData.description,
         eventDate: formData.eventDate,
+        endDate: formData.endDate || formData.eventDate, // Default to start date if no end date
         startTime: formData.startTime || null,
         endTime: formData.endTime || null,
         venueId: formData.venueId || null,
@@ -91,6 +93,7 @@ function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
           name: '',
           description: '',
           eventDate: '',
+          endDate: '',
           startTime: '',
           endTime: '',
           venueId: '',
@@ -122,6 +125,7 @@ function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
       name: '',
       description: '',
       eventDate: '',
+      endDate: '',
       startTime: '',
       endTime: '',
       venueId: '',
@@ -232,23 +236,45 @@ function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
               />
             </div>
 
-            {/* Event Date */}
-            <div>
-              <label
-                htmlFor="eventDate"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
-                Event Date *
-              </label>
-              <input
-                type="date"
-                id="eventDate"
-                name="eventDate"
-                value={formData.eventDate}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+            {/* Event Dates */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="eventDate"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Start Date *
+                </label>
+                <input
+                  type="date"
+                  id="eventDate"
+                  name="eventDate"
+                  value={formData.eventDate}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="endDate"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleInputChange}
+                  min={formData.eventDate} // End date can't be before start date
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Leave empty for single-day events
+                </p>
+              </div>
             </div>
 
             {/* Time Fields */}

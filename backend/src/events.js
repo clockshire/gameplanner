@@ -20,7 +20,8 @@ class EventService {
    * @param {Object} eventData - Event data
    * @param {string} eventData.name - Event name
    * @param {string} eventData.description - Event description
-   * @param {string} eventData.eventDate - Event date (ISO string)
+   * @param {string} eventData.eventDate - Event start date (ISO string)
+   * @param {string} eventData.endDate - Event end date (ISO string, optional)
    * @param {string} eventData.startTime - Event start time
    * @param {string} eventData.endTime - Event end time
    * @param {string} eventData.venueId - Associated venue ID
@@ -40,6 +41,7 @@ class EventService {
         eventName: eventData.name,
         description: eventData.description || '',
         eventDate: eventData.eventDate,
+        endDate: eventData.endDate || eventData.eventDate, // Default to start date if no end date
         startTime: eventData.startTime || '',
         endTime: eventData.endTime || '',
         venueId: eventData.venueId || null,
@@ -138,11 +140,14 @@ class EventService {
       const eventsToUpdate = [];
 
       for (const event of result.Items || []) {
-        const eventDate = new Date(event.eventDate);
-        eventDate.setHours(0, 0, 0, 0); // Start of event date
+        const eventStartDate = new Date(event.eventDate);
+        eventStartDate.setHours(0, 0, 0, 0); // Start of event start date
 
-        // If event is in the past and still marked as active, update it
-        if (eventDate < today && event.status === 'active') {
+        const eventEndDate = new Date(event.endDate || event.eventDate);
+        eventEndDate.setHours(23, 59, 59, 999); // End of event end date
+
+        // If event has ended and still marked as active, update it
+        if (eventEndDate < today && event.status === 'active') {
           event.status = 'completed';
           eventsToUpdate.push(event);
         }
