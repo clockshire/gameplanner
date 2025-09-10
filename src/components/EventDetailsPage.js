@@ -19,6 +19,7 @@ function EventDetailsPage({
   const [event, setEvent] = useState(null);
   const [venue, setVenue] = useState(null);
   const [creator, setCreator] = useState(null);
+  const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -69,11 +70,36 @@ function EventDetailsPage({
 
       if (data.success) {
         setVenue(data.data);
+        // Also fetch rooms for this venue
+        await fetchVenueRooms(venueId);
       } else {
         console.warn('Failed to fetch venue details:', data.message);
       }
     } catch (err) {
       console.warn('Error fetching venue details:', err);
+    }
+  };
+
+  /**
+   * Fetch rooms for a venue
+   * @param {string} venueId - Venue ID
+   */
+  const fetchVenueRooms = async (venueId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/rooms/venue/${venueId}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setRooms(data.data || []);
+      } else {
+        console.warn('Failed to fetch venue rooms:', data.message);
+        setRooms([]);
+      }
+    } catch (err) {
+      console.warn('Error fetching venue rooms:', err);
+      setRooms([]);
     }
   };
 
@@ -546,6 +572,25 @@ function EventDetailsPage({
                         <span className="text-gray-300 text-sm">
                           {venue.capacity} people
                         </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Room Information */}
+                  {rooms.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-400 mb-2">
+                        Rooms
+                      </h3>
+                      <div className="flex flex-wrap gap-1">
+                        {rooms.map((room) => (
+                          <span
+                            key={room.roomId}
+                            className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700"
+                          >
+                            {room.roomName} ({room.capacity} 👥)
+                          </span>
+                        ))}
                       </div>
                     </div>
                   )}
