@@ -59,7 +59,7 @@ function App() {
    */
   const handleViewEventDetails = (eventId) => {
     setSelectedEventId(eventId);
-    setCurrentPage('event-details');
+    setCurrentPage(`event-details/${eventId}`);
   };
 
   /**
@@ -77,6 +77,14 @@ function App() {
     const handlePopState = () => {
       const hash = window.location.hash.slice(1) || 'home';
       setCurrentPage(hash);
+
+      // Parse eventId from hash if it's an event-details page
+      if (hash.startsWith('event-details/')) {
+        const eventId = hash.split('/')[1];
+        setSelectedEventId(eventId);
+      } else {
+        setSelectedEventId(null);
+      }
     };
 
     // Listen for browser navigation
@@ -186,7 +194,7 @@ function App() {
       <main>
         {currentPage === 'events' ? (
           <EventsPage onViewEventDetails={handleViewEventDetails} />
-        ) : currentPage === 'event-details' && selectedEventId ? (
+        ) : currentPage.startsWith('event-details/') && selectedEventId ? (
           <EventDetailsPage
             eventId={selectedEventId}
             onBack={handleBackFromEventDetails}
