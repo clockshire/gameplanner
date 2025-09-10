@@ -21,6 +21,7 @@ function ManageEventRoomsModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [roomTimes, setRoomTimes] = useState({});
+  const [copyFromRoom, setCopyFromRoom] = useState('');
 
   /**
    * Generate event dates for the dropdown
@@ -94,6 +95,30 @@ function ManageEventRoomsModal({
     } catch (error) {
       return dateString; // Fallback to original string
     }
+  };
+
+  /**
+   * Copy time slots from one room to another
+   */
+  const copyTimeSlots = (fromRoomId, toRoomId) => {
+    if (!fromRoomId || !toRoomId || fromRoomId === toRoomId) return;
+
+    const sourceTimes = roomTimes[fromRoomId] || [];
+    if (sourceTimes.length === 0) return;
+
+    // Create a deep copy of the time slots
+    const copiedTimes = sourceTimes.map((slot) => ({
+      ...slot,
+      // Reset any unique identifiers if they exist
+    }));
+
+    setRoomTimes((prev) => ({
+      ...prev,
+      [toRoomId]: copiedTimes,
+    }));
+
+    // Clear the copy selection
+    setCopyFromRoom('');
   };
 
   /**
@@ -459,13 +484,60 @@ function ManageEventRoomsModal({
                                 <h5 className="text-sm font-medium text-gray-400">
                                   Available Times:
                                 </h5>
-                                <button
-                                  type="button"
-                                  onClick={() => addTimeSlot(room.roomId)}
-                                  className="text-green-400 hover:text-green-300 text-sm"
-                                >
-                                  + Add Time Slot
-                                </button>
+                                <div className="flex items-center space-x-3">
+                                  {/* Copy from dropdown */}
+                                  {times.length === 0 && (
+                                    <div className="flex items-center space-x-2">
+                                      <label className="text-xs text-gray-400">
+                                        Copy from:
+                                      </label>
+                                      <select
+                                        value={copyFromRoom}
+                                        onChange={(e) =>
+                                          setCopyFromRoom(e.target.value)
+                                        }
+                                        className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                                      >
+                                        <option value="">Select room...</option>
+                                        {venueRooms
+                                          .filter(
+                                            (r) =>
+                                              r.roomId !== room.roomId &&
+                                              roomTimes[r.roomId]?.length > 0
+                                          )
+                                          .map((r) => (
+                                            <option
+                                              key={r.roomId}
+                                              value={r.roomId}
+                                            >
+                                              {r.roomName}
+                                            </option>
+                                          ))}
+                                      </select>
+                                      {copyFromRoom && (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            copyTimeSlots(
+                                              copyFromRoom,
+                                              room.roomId
+                                            )
+                                          }
+                                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                                        >
+                                          Copy
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => addTimeSlot(room.roomId)}
+                                    className="text-green-400 hover:text-green-300 text-sm"
+                                  >
+                                    + Add Time Slot
+                                  </button>
+                                </div>
                               </div>
 
                               {times.map((slot, index) => (
