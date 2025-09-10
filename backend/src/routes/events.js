@@ -132,11 +132,37 @@ router.get('/:eventId', async (req, res) => {
 router.put('/:eventId', async (req, res) => {
   try {
     const { eventId } = req.params;
-    const updateData = req.body;
+    const {
+      eventName,
+      description,
+      eventDate,
+      startTime,
+      endTime,
+      venueId,
+      maxParticipants,
+      status,
+      createdBy,
+    } = req.body;
 
-    // Remove fields that shouldn't be updated
-    delete updateData.eventId;
-    delete updateData.createdAt;
+    // Map frontend field names to backend field names
+    const updateData = {
+      name: eventName,
+      description,
+      eventDate,
+      startTime,
+      endTime,
+      venueId,
+      maxParticipants,
+      status,
+      createdBy,
+    };
+
+    // Remove undefined/null values
+    Object.keys(updateData).forEach((key) => {
+      if (updateData[key] === undefined || updateData[key] === null) {
+        delete updateData[key];
+      }
+    });
 
     const result = await eventService.updateEvent(eventId, updateData);
 

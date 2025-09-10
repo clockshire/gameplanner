@@ -7,6 +7,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [editVenueId, setEditVenueId] = useState(null);
   const [selectedEventId, setSelectedEventId] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [showEditEventModal, setShowEditEventModal] = useState(false);
 
   /**
    * Handle logout
@@ -68,6 +70,35 @@ function App() {
   const handleBackFromEventDetails = () => {
     setSelectedEventId(null);
     setCurrentPage('events');
+  };
+
+  /**
+   * Handle edit event
+   */
+  const handleEditEvent = (event) => {
+    setEditingEvent(event);
+    setShowEditEventModal(true);
+  };
+
+  /**
+   * Handle close edit event modal
+   */
+  const handleCloseEditEventModal = () => {
+    setEditingEvent(null);
+    setShowEditEventModal(false);
+  };
+
+  /**
+   * Handle event updated
+   */
+  const handleEventUpdated = (updatedEvent) => {
+    // Close the modal
+    handleCloseEditEventModal();
+    // Refresh the event details if we're viewing the same event
+    if (selectedEventId === updatedEvent.eventId) {
+      // The EventDetailsPage will refresh when it re-renders
+      window.location.reload();
+    }
   };
 
   /**
@@ -201,6 +232,8 @@ function App() {
           <EventDetailsPage
             eventId={selectedEventId}
             onBack={handleBackFromEventDetails}
+            currentUser={user}
+            onEditEvent={handleEditEvent}
           />
         ) : currentPage === 'venues' ? (
           <VenuesPage
@@ -231,6 +264,15 @@ function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* Edit Event Modal */}
+      <EditEventModal
+        event={editingEvent}
+        isOpen={showEditEventModal}
+        onClose={handleCloseEditEventModal}
+        onEventUpdated={handleEventUpdated}
+        currentUser={user}
       />
     </div>
   );

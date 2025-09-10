@@ -9,7 +9,7 @@ const { useState, useEffect } = React;
  * EventDetailsPage component
  * Shows detailed event information with venue details
  */
-function EventDetailsPage({ eventId, onBack }) {
+function EventDetailsPage({ eventId, onBack, currentUser, onEditEvent }) {
   const [event, setEvent] = useState(null);
   const [venue, setVenue] = useState(null);
   const [creator, setCreator] = useState(null);
@@ -239,25 +239,53 @@ function EventDetailsPage({ eventId, onBack }) {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <button
-                onClick={onBack}
-                className="flex items-center text-gray-400 hover:text-white transition-colors mb-4"
-              >
-                <svg
-                  className="h-5 w-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={onBack}
+                  className="flex items-center text-gray-400 hover:text-white transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-                Back to Events
-              </button>
+                  <svg
+                    className="h-5 w-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  Back to Events
+                </button>
+
+                {/* Edit Event Button - Only show for creator */}
+                {currentUser &&
+                  event.createdBy === currentUser.userId &&
+                  onEditEvent && (
+                    <button
+                      onClick={() => onEditEvent(event)}
+                      className="flex items-center bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      <svg
+                        className="h-4 w-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      Edit Event
+                    </button>
+                  )}
+              </div>
+
               <h1 className="text-3xl font-bold text-white mb-2">
                 {event.eventName}
               </h1>
@@ -276,7 +304,10 @@ function EventDetailsPage({ eventId, onBack }) {
               {creator && (
                 <div className="mt-2">
                   <span className="text-gray-400 text-sm">
-                    Created by: <span className="text-white font-medium">{creator.email}</span>
+                    Created by:{' '}
+                    <span className="text-white font-medium">
+                      {creator.email}
+                    </span>
                   </span>
                 </div>
               )}
