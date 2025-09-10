@@ -647,16 +647,63 @@ function EventDetailsPage({
                                   Available Times:
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
-                                  {room.availableTimes.map((time, index) => (
-                                    <span
-                                      key={index}
-                                      className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-green-900 text-green-200 border border-green-700"
-                                    >
-                                      {time.dayOfWeek.charAt(0).toUpperCase() +
-                                        time.dayOfWeek.slice(1)}{' '}
-                                      {time.startTime}-{time.endTime}
-                                    </span>
-                                  ))}
+                                  {room.availableTimes.map((time, index) => {
+                                    // Format the date for display
+                                    const formatDateForDisplay = (
+                                      dateString
+                                    ) => {
+                                      try {
+                                        const date = new Date(dateString);
+                                        const dayName = date.toLocaleDateString(
+                                          'en-GB',
+                                          { weekday: 'long' }
+                                        );
+                                        const dayNumber = date.getDate();
+                                        const monthName =
+                                          date.toLocaleDateString('en-GB', {
+                                            month: 'short',
+                                          });
+                                        const year = date.getFullYear();
+
+                                        const getOrdinalSuffix = (day) => {
+                                          if (day >= 11 && day <= 13)
+                                            return 'th';
+                                          switch (day % 10) {
+                                            case 1:
+                                              return 'st';
+                                            case 2:
+                                              return 'nd';
+                                            case 3:
+                                              return 'rd';
+                                            default:
+                                              return 'th';
+                                          }
+                                        };
+
+                                        return `${dayName}, ${dayNumber}${getOrdinalSuffix(
+                                          dayNumber
+                                        )} ${monthName} ${year}`;
+                                      } catch (error) {
+                                        // Fallback to original format if date parsing fails
+                                        return (
+                                          time.dayOfWeek
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                          time.dayOfWeek.slice(1)
+                                        );
+                                      }
+                                    };
+
+                                    return (
+                                      <span
+                                        key={index}
+                                        className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-green-900 text-green-200 border border-green-700"
+                                      >
+                                        {formatDateForDisplay(time.dayOfWeek)}{' '}
+                                        {time.startTime}-{time.endTime}
+                                      </span>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -739,7 +786,9 @@ function EventDetailsPage({
                     </div>
                   )}
 
-                  {(venue.contactPhone || venue.contactEmail || venue.websiteURL) && (
+                  {(venue.contactPhone ||
+                    venue.contactEmail ||
+                    venue.websiteURL) && (
                     <div>
                       <h3 className="text-sm font-medium text-gray-400 mb-2">
                         Contact

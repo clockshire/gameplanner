@@ -23,6 +23,80 @@ function ManageEventRoomsModal({
   const [roomTimes, setRoomTimes] = useState({});
 
   /**
+   * Generate event dates for the dropdown
+   * Returns array of date objects with formatted display text and ISO date values
+   */
+  const generateEventDates = () => {
+    if (!event?.eventDate) return [];
+
+    const startDate = new Date(event.eventDate);
+    const endDate = new Date(event.endDate || event.eventDate);
+
+    const dates = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      const dayName = currentDate.toLocaleDateString('en-GB', {
+        weekday: 'long',
+      });
+      const dayNumber = currentDate.getDate();
+      const monthName = currentDate.toLocaleDateString('en-GB', {
+        month: 'long',
+      });
+      const year = currentDate.getFullYear();
+
+      dates.push({
+        value: currentDate.toISOString().split('T')[0], // ISO date string (YYYY-MM-DD)
+        label: `${dayName}, ${dayNumber}${getOrdinalSuffix(
+          dayNumber
+        )} ${monthName} ${year}`,
+        dayOfWeek: dayName.toLowerCase(),
+        date: new Date(currentDate),
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
+  };
+
+  /**
+   * Get ordinal suffix for day numbers (1st, 2nd, 3rd, etc.)
+   */
+  const getOrdinalSuffix = (day) => {
+    if (day >= 11 && day <= 13) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  };
+
+  /**
+   * Format event date for display
+   */
+  const formatEventDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const dayName = date.toLocaleDateString('en-GB', { weekday: 'long' });
+      const dayNumber = date.getDate();
+      const monthName = date.toLocaleDateString('en-GB', { month: 'long' });
+      const year = date.getFullYear();
+
+      return `${dayName}, ${dayNumber}${getOrdinalSuffix(
+        dayNumber
+      )} ${monthName} ${year}`;
+    } catch (error) {
+      return dateString; // Fallback to original string
+    }
+  };
+
+  /**
    * Initialize rooms when modal opens
    */
   useEffect(() => {
@@ -186,11 +260,14 @@ function ManageEventRoomsModal({
    * Add a new time slot for a room
    */
   const addTimeSlot = (roomId) => {
+    const eventDates = generateEventDates();
+    const defaultDate = eventDates.length > 0 ? eventDates[0].value : '';
+
     setRoomTimes((prev) => ({
       ...prev,
       [roomId]: [
         ...(prev[roomId] || []),
-        { startTime: '', endTime: '', dayOfWeek: 'monday' },
+        { startTime: '', endTime: '', dayOfWeek: defaultDate },
       ],
     }));
   };
@@ -233,28 +310,48 @@ function ManageEventRoomsModal({
       <div className="bg-gray-800 rounded-lg border border-gray-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">
-              Manage Rooms - {event?.eventName}
-            </h2>
-            <button
-              onClick={handleClose}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">
+                Manage Rooms - {event?.eventName}
+              </h2>
+              <button
+                onClick={handleClose}
+                className="text-gray-400 hover:text-white transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            {event && (
+              <div className="mt-3 text-sm text-gray-300">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-6">
+                  <span>
+                    <strong>Event Start:</strong>{' '}
+                    {formatEventDate(event.eventDate)}{' '}
+                    {event.startTime && `at ${event.startTime}`}
+                  </span>
+                  {event.endDate && event.endDate !== event.eventDate && (
+                    <span>
+                      <strong>Event End:</strong>{' '}
+                      {formatEventDate(event.endDate)}{' '}
+                      {event.endTime && `at ${event.endTime}`}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Error Message */}
@@ -386,15 +483,16 @@ function ManageEventRoomsModal({
                                         e.target.value
                                       )
                                     }
-                                    className="px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    className="px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm min-w-48"
                                   >
-                                    <option value="monday">Monday</option>
-                                    <option value="tuesday">Tuesday</option>
-                                    <option value="wednesday">Wednesday</option>
-                                    <option value="thursday">Thursday</option>
-                                    <option value="friday">Friday</option>
-                                    <option value="saturday">Saturday</option>
-                                    <option value="sunday">Sunday</option>
+                                    {generateEventDates().map((dateOption) => (
+                                      <option
+                                        key={dateOption.value}
+                                        value={dateOption.value}
+                                      >
+                                        {dateOption.label}
+                                      </option>
+                                    ))}
                                   </select>
                                   <input
                                     type="time"
