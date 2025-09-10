@@ -15,11 +15,13 @@ function EventDetailsPage({
   currentUser,
   onEditEvent,
   onDeleteEvent,
+  onManageRooms,
 }) {
   const [event, setEvent] = useState(null);
   const [venue, setVenue] = useState(null);
   const [creator, setCreator] = useState(null);
   const [rooms, setRooms] = useState([]);
+  const [eventRooms, setEventRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -46,6 +48,8 @@ function EventDetailsPage({
         if (data.data.createdBy) {
           await fetchCreatorDetails(data.data.createdBy);
         }
+        // Fetch event-specific room assignments
+        await fetchEventRooms(data.data.eventId);
       } else {
         setError(data.message || 'Failed to fetch event details');
       }
@@ -121,6 +125,29 @@ function EventDetailsPage({
       }
     } catch (err) {
       console.warn('Error fetching creator details:', err);
+    }
+  };
+
+  /**
+   * Fetch event-specific room assignments
+   * @param {string} eventId - Event ID
+   */
+  const fetchEventRooms = async (eventId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/events/${eventId}/rooms`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setEventRooms(data.data || []);
+      } else {
+        console.warn('Failed to fetch event rooms:', data.message);
+        setEventRooms([]);
+      }
+    } catch (err) {
+      console.warn('Error fetching event rooms:', err);
+      setEventRooms([]);
     }
   };
 
@@ -318,6 +345,27 @@ function EventDetailsPage({
                           Edit Event
                         </button>
                       )}
+                      {onManageRooms && (
+                        <button
+                          onClick={() => onManageRooms(event)}
+                          className="flex items-center bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                          <svg
+                            className="h-4 w-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                            />
+                          </svg>
+                          Manage Rooms
+                        </button>
+                      )}
                       {onDeleteEvent && (
                         <button
                           onClick={() => onDeleteEvent(event)}
@@ -463,6 +511,66 @@ function EventDetailsPage({
                 </div>
               </div>
             </div>
+
+            {/* Event Rooms Section */}
+            {eventRooms.length > 0 && (
+              <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
+                <h2 className="text-xl font-semibold text-white mb-4">
+                  Assigned Rooms & Availability
+                </h2>
+                <div className="space-y-4">
+                  {eventRooms.map((room) => (
+                    <div
+                      key={room.roomId}
+                      className="bg-gray-700 rounded-lg p-4 border border-gray-600"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h3 className="text-lg font-medium text-white">
+                              {room.roomName}
+                            </h3>
+                            {room.capacity && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700">
+                                {room.capacity} 👥
+                              </span>
+                            )}
+                          </div>
+
+                          {room.description && (
+                            <p className="text-gray-300 text-sm mb-3">
+                              {room.description}
+                            </p>
+                          )}
+
+                          {/* Available Times */}
+                          {room.availableTimes &&
+                            room.availableTimes.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-400 mb-2">
+                                  Available Times:
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {room.availableTimes.map((time, index) => (
+                                    <span
+                                      key={index}
+                                      className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-green-900 text-green-200 border border-green-700"
+                                    >
+                                      {time.dayOfWeek.charAt(0).toUpperCase() +
+                                        time.dayOfWeek.slice(1)}{' '}
+                                      {time.startTime}-{time.endTime}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Venue Information */}
@@ -572,25 +680,6 @@ function EventDetailsPage({
                         <span className="text-gray-300 text-sm">
                           {venue.capacity} people
                         </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Room Information */}
-                  {rooms.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-400 mb-2">
-                        Rooms
-                      </h3>
-                      <div className="flex flex-wrap gap-1">
-                        {rooms.map((room) => (
-                          <span
-                            key={room.roomId}
-                            className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700"
-                          >
-                            {room.roomName} ({room.capacity} 👥)
-                          </span>
-                        ))}
                       </div>
                     </div>
                   )}

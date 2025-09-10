@@ -142,6 +142,7 @@ router.put('/:eventId', async (req, res) => {
       maxParticipants,
       status,
       createdBy,
+      assignedRoomIds,
     } = req.body;
 
     // Map frontend field names to backend field names
@@ -155,6 +156,7 @@ router.put('/:eventId', async (req, res) => {
       maxParticipants,
       status,
       createdBy,
+      assignedRoomIds,
     };
 
     // Remove undefined/null values

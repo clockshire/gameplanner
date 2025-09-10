@@ -27,6 +27,8 @@ function EditEventModal({
   });
   const [venues, setVenues] = useState([]);
   const [selectedVenueId, setSelectedVenueId] = useState('');
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoomIds, setSelectedRoomIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -45,6 +47,7 @@ function EditEventModal({
         status: event.status || 'active',
       });
       setSelectedVenueId(event.venueId || '');
+      setSelectedRoomIds(event.assignedRoomIds || []);
     }
   }, [event]);
 
@@ -67,6 +70,34 @@ function EditEventModal({
   };
 
   /**
+   * Fetch rooms for the selected venue
+   * @param {string} venueId - Venue ID
+   */
+  const fetchRooms = async (venueId) => {
+    if (!venueId) {
+      setRooms([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/rooms/venue/${venueId}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setRooms(data.data || []);
+      } else {
+        console.error('Failed to fetch rooms:', data.message);
+        setRooms([]);
+      }
+    } catch (err) {
+      console.error('Error fetching rooms:', err);
+      setRooms([]);
+    }
+  };
+
+  /**
    * Load venues when modal opens
    */
   useEffect(() => {
@@ -85,6 +116,32 @@ function EditEventModal({
       ...prev,
       [name]: value,
     }));
+  };
+
+  /**
+   * Handle venue selection change
+   * @param {Event} e - Select event
+   */
+  const handleVenueChange = (e) => {
+    const venueId = e.target.value;
+    setSelectedVenueId(venueId);
+    setSelectedRoomIds([]); // Clear room selection when venue changes
+    fetchRooms(venueId);
+  };
+
+  /**
+   * Handle room selection change
+   * @param {Event} e - Checkbox event
+   */
+  const handleRoomChange = (e) => {
+    const roomId = e.target.value;
+    const isChecked = e.target.checked;
+
+    if (isChecked) {
+      setSelectedRoomIds((prev) => [...prev, roomId]);
+    } else {
+      setSelectedRoomIds((prev) => prev.filter((id) => id !== roomId));
+    }
   };
 
   /**
@@ -114,6 +171,7 @@ function EditEventModal({
           : null,
         status: formData.status,
         venueId: selectedVenueId || null,
+        assignedRoomIds: selectedRoomIds,
         createdBy: currentUser?.userId,
       };
 
@@ -314,7 +372,7 @@ function EditEventModal({
                 <select
                   id="venueId"
                   value={selectedVenueId}
-                  onChange={(e) => setSelectedVenueId(e.target.value)}
+                  onChange={handleVenueChange}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select a venue</option>
@@ -345,6 +403,37 @@ function EditEventModal({
                 />
               </div>
             </div>
+
+            {/* Room Assignment */}
+            {selectedVenueId && rooms.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Available Rooms
+                </label>
+                <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-600 rounded-lg p-3 bg-gray-700">
+                  {rooms.map((room) => (
+                    <label
+                      key={room.roomId}
+                      className="flex items-center space-x-3 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        value={room.roomId}
+                        checked={selectedRoomIds.includes(room.roomId)}
+                        onChange={handleRoomChange}
+                        className="h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span className="text-gray-300">
+                        {room.roomName} ({room.capacity} 👥)
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Select which rooms will be available for this event
+                </p>
+              </div>
+            )}
 
             {/* Status */}
             <div>

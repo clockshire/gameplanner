@@ -11,6 +11,8 @@ function App() {
   const [showEditEventModal, setShowEditEventModal] = useState(false);
   const [deletingEvent, setDeletingEvent] = useState(null);
   const [showDeleteEventModal, setShowDeleteEventModal] = useState(false);
+  const [managingRoomsEvent, setManagingRoomsEvent] = useState(null);
+  const [showManageRoomsModal, setShowManageRoomsModal] = useState(false);
 
   /**
    * Handle logout
@@ -128,6 +130,35 @@ function App() {
     // Navigate back to events list
     setSelectedEventId(null);
     setCurrentPage('events');
+  };
+
+  /**
+   * Handle manage rooms
+   */
+  const handleManageRooms = (event) => {
+    setManagingRoomsEvent(event);
+    setShowManageRoomsModal(true);
+  };
+
+  /**
+   * Handle close manage rooms modal
+   */
+  const handleCloseManageRoomsModal = () => {
+    setManagingRoomsEvent(null);
+    setShowManageRoomsModal(false);
+  };
+
+  /**
+   * Handle rooms updated
+   */
+  const handleRoomsUpdated = () => {
+    // Close the modal
+    handleCloseManageRoomsModal();
+    // Refresh the event details if we're viewing the same event
+    if (selectedEventId === managingRoomsEvent?.eventId) {
+      // The EventDetailsPage will refresh when it re-renders
+      window.location.reload();
+    }
   };
 
   /**
@@ -264,6 +295,7 @@ function App() {
             currentUser={user}
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
+            onManageRooms={handleManageRooms}
           />
         ) : currentPage === 'venues' ? (
           <VenuesPage
@@ -311,6 +343,15 @@ function App() {
         isOpen={showDeleteEventModal}
         onClose={handleCloseDeleteEventModal}
         onEventDeleted={handleEventDeleted}
+      />
+
+      {/* Manage Event Rooms Modal */}
+      <ManageEventRoomsModal
+        event={managingRoomsEvent}
+        isOpen={showManageRoomsModal}
+        onClose={handleCloseManageRoomsModal}
+        onRoomsUpdated={handleRoomsUpdated}
+        currentUser={user}
       />
     </div>
   );

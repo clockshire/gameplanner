@@ -32,6 +32,10 @@ const usersTableSchema = {
       AttributeName: 'email',
       AttributeType: 'S', // String
     },
+    {
+      AttributeName: 'eventId',
+      AttributeType: 'S', // String
+    },
   ],
   GlobalSecondaryIndexes: [
     {
@@ -39,6 +43,18 @@ const usersTableSchema = {
       KeySchema: [
         {
           AttributeName: 'email',
+          KeyType: 'HASH',
+        },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+    },
+    {
+      IndexName: 'EventIdIndex',
+      KeySchema: [
+        {
+          AttributeName: 'eventId',
           KeyType: 'HASH',
         },
       ],
