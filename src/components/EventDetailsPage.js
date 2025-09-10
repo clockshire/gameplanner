@@ -152,7 +152,7 @@ function EventDetailsPage({
       case 'cancelled':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'completed':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-700 text-gray-200 border-gray-600';
       default:
         return 'bg-blue-100 text-blue-800 border-blue-200';
     }
@@ -320,7 +320,7 @@ function EventDetailsPage({
               </h1>
               <div className="flex items-center space-x-3">
                 <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusBadgeClasses(
+                  className={`inline-flex items-center px-3 py-1 rounded text-sm font-medium border ${getStatusBadgeClasses(
                     event.status
                   )}`}
                 >
