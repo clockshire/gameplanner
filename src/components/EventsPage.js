@@ -9,7 +9,7 @@ const { useState, useEffect } = React;
  * EventsPage component
  * Shows all events with proper formatting and empty state
  */
-function EventsPage() {
+function EventsPage({ onViewEventDetails }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -307,7 +307,10 @@ function EventsPage() {
                   </div>
 
                   <div className="mt-4 sm:mt-0 sm:ml-6">
-                    <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded transition-colors">
+                    <button
+                      onClick={() => onViewEventDetails(event.eventId)}
+                      className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded transition-colors"
+                    >
                       View Details
                     </button>
                   </div>

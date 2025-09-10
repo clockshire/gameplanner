@@ -6,6 +6,7 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
   const [editVenueId, setEditVenueId] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState(null);
 
   /**
    * Handle logout
@@ -27,6 +28,7 @@ function App() {
   const handleNavigation = (page) => {
     setCurrentPage(page);
     setEditVenueId(null); // Clear edit venue when navigating
+    setSelectedEventId(null); // Clear selected event when navigating
   };
 
   /**
@@ -50,6 +52,22 @@ function App() {
    */
   const handleVenueUpdated = () => {
     // This will be passed to VenuesPage to refresh the list
+  };
+
+  /**
+   * Handle view event details
+   */
+  const handleViewEventDetails = (eventId) => {
+    setSelectedEventId(eventId);
+    setCurrentPage('event-details');
+  };
+
+  /**
+   * Handle back from event details
+   */
+  const handleBackFromEventDetails = () => {
+    setSelectedEventId(null);
+    setCurrentPage('events');
   };
 
   /**
@@ -167,7 +185,12 @@ function App() {
 
       <main>
         {currentPage === 'events' ? (
-          <EventsPage />
+          <EventsPage onViewEventDetails={handleViewEventDetails} />
+        ) : currentPage === 'event-details' && selectedEventId ? (
+          <EventDetailsPage
+            eventId={selectedEventId}
+            onBack={handleBackFromEventDetails}
+          />
         ) : currentPage === 'venues' ? (
           <VenuesPage
             onEditVenue={handleEditVenue}
