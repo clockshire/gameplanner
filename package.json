@@ -17,7 +17,10 @@
     "dynamodb:test": "node backend/scripts/test-operations.js",
     "dynamodb:status": "docker ps --filter name=dynamodb-local",
     "dynamodb:start": "make start-local-dynamodb",
-    "dynamodb:stop": "make stop-local-dynamodb"
+    "dynamodb:stop": "make stop-local-dynamodb",
+    "test:venue-deletion": "node src/tests/venue-deletion.test.js",
+    "test:all": "node src/tests/test-runner.js",
+    "test": "npm run test:all"
   },
   "dependencies": {
     "aws-sdk": "^2.1490.0",
