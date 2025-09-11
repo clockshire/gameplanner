@@ -233,6 +233,37 @@ class RoomService {
       };
     }
   }
+
+  /**
+   * Get all rooms
+   * @returns {Promise<Object>} All rooms
+   */
+  async getAllRooms() {
+    try {
+      const params = {
+        TableName: this.tableName,
+        FilterExpression: 'entityType = :entityType',
+        ExpressionAttributeValues: {
+          ':entityType': 'ROOM',
+        },
+      };
+
+      const result = await dynamodb.scan(params).promise();
+
+      return {
+        success: true,
+        data: result.Items || [],
+        message: 'Rooms retrieved successfully',
+      };
+    } catch (error) {
+      console.error('Error getting all rooms:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to get rooms',
+      };
+    }
+  }
 }
 
 module.exports = RoomService;

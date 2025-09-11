@@ -33,11 +33,19 @@ async function apiRequest(method, endpoint, data = null) {
   }
 
   const response = await fetch(url, options);
-  const result = await response.json();
+
+  // Try to parse as JSON, fall back to text if it fails
+  let responseData;
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    responseData = await response.json();
+  } else {
+    responseData = await response.text();
+  }
 
   return {
     status: response.status,
-    data: result,
+    data: responseData,
     success: response.ok,
   };
 }
@@ -442,3 +450,11 @@ module.exports = {
     return testsFailed;
   },
 };
+
+// If running directly, execute the tests
+if (require.main === module) {
+  runTests().catch((error) => {
+    console.error('💥 Test crashed:', error);
+    process.exit(1);
+  });
+}

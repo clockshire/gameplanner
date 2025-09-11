@@ -10,6 +10,29 @@ const router = express.Router();
 const roomService = new RoomService();
 
 /**
+ * GET /api/rooms
+ * Get all rooms
+ */
+router.get('/', async (req, res) => {
+  try {
+    const result = await roomService.getAllRooms();
+
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Get all rooms error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: 'Failed to get rooms',
+    });
+  }
+});
+
+/**
  * POST /api/rooms
  * Create a new room
  */
