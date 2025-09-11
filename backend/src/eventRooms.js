@@ -8,7 +8,7 @@ AWS.config.update({
 });
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
-const tableName = 'users';
+const tableName = 'events';
 
 /**
  * Event Rooms Service
@@ -28,11 +28,11 @@ class EventRoomService {
     try {
       const params = {
         TableName: this.tableName,
-        IndexName: 'EventIdIndex',
-        KeyConditionExpression: 'eventId = :eventId',
+        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
         FilterExpression: 'entityType = :entityType',
         ExpressionAttributeValues: {
-          ':eventId': eventId,
+          ':pk': `EVENT#${eventId}`,
+          ':sk': 'ROOM#',
           ':entityType': 'EVENT_ROOM',
         },
       };
