@@ -44,6 +44,14 @@ router.post('/', async (req, res) => {
       });
     }
 
+    if (!venueId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Venue ID is required',
+        message: 'Venue ID is required',
+      });
+    }
+
     if (!createdBy) {
       return res.status(400).json({
         success: false,

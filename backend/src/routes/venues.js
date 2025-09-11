@@ -35,6 +35,14 @@ router.post('/', async (req, res) => {
       });
     }
 
+    if (!address) {
+      return res.status(400).json({
+        success: false,
+        error: 'Venue address is required',
+        message: 'Venue address is required',
+      });
+    }
+
     const result = await venueService.createVenue({
       name,
       description,
