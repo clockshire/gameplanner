@@ -210,12 +210,161 @@ class VenueService {
   }
 
   /**
-   * Delete a venue
+   * Check if venue is referenced by any events
    * @param {string} venueId - Venue ID
+   * @returns {Promise<Object>} Validation result with event details
+   */
+  async checkVenueEventReferences(venueId) {
+    try {
+      const params = {
+        TableName: 'events',
+        FilterExpression: 'venueId = :venueId',
+        ExpressionAttributeValues: {
+          ':venueId': venueId,
+        },
+      };
+
+      const result = await dynamodb.scan(params).promise();
+      const events = result.Items || [];
+
+      return {
+        success: true,
+        hasReferences: events.length > 0,
+        events: events,
+        message:
+          events.length > 0
+            ? `Venue is referenced by ${events.length} event(s)`
+            : 'No event references found',
+      };
+    } catch (error) {
+      console.error('Error checking venue event references:', error);
+      return {
+        success: false,
+        hasReferences: false,
+        events: [],
+        error: error.message,
+        message: 'Failed to check event references',
+      };
+    }
+  }
+
+  /**
+   * Delete all rooms associated with a venue
+   * @param {string} venueId - Venue ID
+   * @returns {Promise<Object>} Deletion result with room details
+   */
+  async deleteVenueRooms(venueId) {
+    try {
+      // Get all rooms for this venue
+      const roomsResult = await this.getVenueRooms(venueId);
+
+      if (!roomsResult.success) {
+        return {
+          success: false,
+          error: roomsResult.error,
+          message: 'Failed to get venue rooms',
+        };
+      }
+
+      const rooms = roomsResult.data;
+      const deletedRooms = [];
+
+      // Delete each room
+      for (const room of rooms) {
+        try {
+          const deleteParams = {
+            TableName: 'rooms',
+            Key: {
+              PK: room.PK,
+              SK: room.SK,
+            },
+            ConditionExpression: 'attribute_exists(PK)',
+          };
+
+          await dynamodb.delete(deleteParams).promise();
+          deletedRooms.push({
+            roomId: room.roomId,
+            roomName: room.roomName,
+          });
+        } catch (error) {
+          console.error(`Error deleting room ${room.roomId}:`, error);
+          // Continue with other rooms even if one fails
+        }
+      }
+
+      return {
+        success: true,
+        deletedRooms: deletedRooms,
+        message: `Successfully deleted ${deletedRooms.length} room(s)`,
+      };
+    } catch (error) {
+      console.error('Error deleting venue rooms:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to delete venue rooms',
+      };
+    }
+  }
+
+  /**
+   * Delete a venue with proper validation and cascading deletes
+   * @param {string} venueId - Venue ID
+   * @param {boolean} forceDelete - Whether to force delete even with event references
    * @returns {Promise<Object>} Deletion result
    */
-  async deleteVenue(venueId) {
+  async deleteVenue(venueId, forceDelete = false) {
     try {
+      // First, check if venue exists
+      const venueResult = await this.getVenue(venueId);
+      if (!venueResult.success) {
+        return {
+          success: false,
+          error: 'Venue not found',
+          message: 'Venue not found',
+        };
+      }
+
+      // Check for event references
+      const eventCheck = await this.checkVenueEventReferences(venueId);
+      if (!eventCheck.success) {
+        return {
+          success: false,
+          error: eventCheck.error,
+          message: 'Failed to validate venue references',
+        };
+      }
+
+      // If venue has event references and not forcing delete, block deletion
+      if (eventCheck.hasReferences && !forceDelete) {
+        const eventNames = eventCheck.events
+          .map((event) => event.eventName)
+          .join(', ');
+        return {
+          success: false,
+          error: 'VENUE_HAS_EVENT_REFERENCES',
+          message: `Cannot delete venue. It is referenced by the following event(s): ${eventNames}`,
+          events: eventCheck.events,
+        };
+      }
+
+      // Get venue rooms for reporting
+      const roomsResult = await this.getVenueRooms(venueId);
+      const rooms = roomsResult.success ? roomsResult.data : [];
+
+      // Delete associated rooms first
+      if (rooms.length > 0) {
+        const roomsDeleteResult = await this.deleteVenueRooms(venueId);
+        if (!roomsDeleteResult.success) {
+          return {
+            success: false,
+            error: roomsDeleteResult.error,
+            message: 'Failed to delete associated rooms',
+          };
+        }
+      }
+
+      // Finally, delete the venue itself
       const params = {
         TableName: this.tableName,
         Key: {
@@ -230,6 +379,11 @@ class VenueService {
       return {
         success: true,
         message: 'Venue deleted successfully',
+        deletedRooms: rooms.map((room) => ({
+          roomId: room.roomId,
+          roomName: room.roomName,
+        })),
+        deletedRoomsCount: rooms.length,
       };
     } catch (error) {
       console.error('Error deleting venue:', error);
