@@ -240,16 +240,6 @@ function App() {
                 Venues
               </button>
               <button
-                onClick={() => handleNavigation('rooms')}
-                className={`transition-colors ${
-                  currentPage === 'rooms'
-                    ? 'text-white font-semibold'
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                Rooms
-              </button>
-              <button
                 onClick={() => handleNavigation('games')}
                 className={`transition-colors ${
                   currentPage === 'games'
