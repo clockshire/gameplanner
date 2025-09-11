@@ -9,6 +9,8 @@ It's designed to be idempotent - safe to run multiple times without creating dup
 import requests
 import sys
 import time
+from datetime import date
+from dateutil.relativedelta import relativedelta
 from typing import Dict, List, Optional, Tuple
 
 
@@ -262,15 +264,31 @@ class DataPopulator:
             ],
         }
 
+        # Calculate dynamic dates
+        today = date.today()
+        past_date_1 = today - relativedelta(months=2)  # 2 months ago
+        past_date_2 = today - relativedelta(months=4)  # 4 months ago
+        future_date_1 = today + relativedelta(months=3)  # 3 months from now
+        future_date_2 = today + relativedelta(months=4)  # 4 months from now
+
+        # Calculate 2nd Tuesday of next month
+        next_month = today + relativedelta(months=1, day=1)
+        # Find first Tuesday of next month
+        first_tuesday = next_month + relativedelta(days=(1 - next_month.weekday()) % 7)
+        future_next_month_2nd_tuesday = first_tuesday + relativedelta(weeks=1)
+
+        # Calculate 4th Tuesday of next month
+        future_next_month_4th_tuesday = first_tuesday + relativedelta(weeks=3)
+
         # Define event data - past and future events for each venue
         events_data = [
             # Monkey Puzzle - Past Event
             {
                 "name": "Board Game Championship - Monkey Puzzle",
                 "description": "Monthly board game tournament featuring strategy games. Winners receive prizes!",
-                "eventDate": "2024-06-15",
+                "eventDate": past_date_2.strftime("%Y-%m-%d"),
                 "startTime": "14:00",
-                "endDate": "2024-06-15",
+                "endDate": past_date_2.strftime("%Y-%m-%d"),
                 "endTime": "20:00",
                 "venueName": "Monkey Puzzle (Farnborough)",
                 "maxParticipants": 25,
@@ -283,9 +301,9 @@ class DataPopulator:
             {
                 "name": "Board Game Night - Monkey Puzzle",
                 "description": "Weekly board game night at Monkey Puzzle. Bring your own games or play ours!",
-                "eventDate": "2024-04-15",
+                "eventDate": future_date_1.strftime("%Y-%m-%d"),
                 "startTime": "18:00",
-                "endDate": "2024-04-15",
+                "endDate": future_date_1.strftime("%Y-%m-%d"),
                 "endTime": "22:00",
                 "venueName": "Monkey Puzzle (Farnborough)",
                 "maxParticipants": 30,
@@ -294,13 +312,43 @@ class DataPopulator:
                 "isPublic": True,
                 "requiresApproval": False,
             },
+            # Monkey Puzzle - Clocktower Beginner
+            {
+                "name": "Clocktower (Beginner Friendly)",
+                "description": "Learn to play Blood on the Clocktower! Perfect for newcomers to the game. Experienced players welcome to help teach.",
+                "eventDate": future_next_month_2nd_tuesday.strftime("%Y-%m-%d"),
+                "startTime": "19:00",
+                "endDate": future_next_month_2nd_tuesday.strftime("%Y-%m-%d"),
+                "endTime": "22:30",
+                "venueName": "Monkey Puzzle (Farnborough)",
+                "maxParticipants": 15,
+                "entryFee": 0,
+                "eventType": "SOCIAL",
+                "isPublic": True,
+                "requiresApproval": False,
+            },
+            # Monkey Puzzle - Clocktower Intermediate+
+            {
+                "name": "Clocktower (Intermediate+)",
+                "description": "Advanced Blood on the Clocktower sessions for experienced players. Complex scripts and challenging scenarios.",
+                "eventDate": future_next_month_4th_tuesday.strftime("%Y-%m-%d"),
+                "startTime": "19:00",
+                "endDate": future_next_month_4th_tuesday.strftime("%Y-%m-%d"),
+                "endTime": "22:30",
+                "venueName": "Monkey Puzzle (Farnborough)",
+                "maxParticipants": 15,
+                "entryFee": 0,
+                "eventType": "SOCIAL",
+                "isPublic": True,
+                "requiresApproval": False,
+            },
             # DoubleTree - Past Event
             {
-                "name": "Q1 Corporate Retreat - DoubleTree",
+                "name": "Clockshire '25",
                 "description": "Quarterly corporate retreat with team building activities and presentations.",
-                "eventDate": "2024-07-10",
+                "eventDate": past_date_1.strftime("%Y-%m-%d"),
                 "startTime": "08:00",
-                "endDate": "2024-07-10",
+                "endDate": past_date_1.strftime("%Y-%m-%d"),
                 "endTime": "18:00",
                 "venueName": "DoubleTree by Hilton Southampton",
                 "maxParticipants": 80,
@@ -311,11 +359,11 @@ class DataPopulator:
             },
             # DoubleTree - Future Event
             {
-                "name": "Corporate Team Building - DoubleTree",
+                "name": "Clockshire '26",
                 "description": "Team building event with various activities and games.",
-                "eventDate": "2024-04-20",
+                "eventDate": future_date_2.strftime("%Y-%m-%d"),
                 "startTime": "09:00",
-                "endDate": "2024-04-20",
+                "endDate": future_date_2.strftime("%Y-%m-%d"),
                 "endTime": "17:00",
                 "venueName": "DoubleTree by Hilton Southampton",
                 "maxParticipants": 100,

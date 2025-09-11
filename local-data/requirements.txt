@@ -2,3 +2,5 @@ requests
 types-requests
 mypy
 black
+python-dateutil
+types-python-dateutil
