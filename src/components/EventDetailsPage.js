@@ -504,7 +504,7 @@ function EventDetailsPage({
                   <span className="text-gray-400 text-sm">
                     Created by:{' '}
                     <span className="text-white font-medium">
-                      {creator.email}
+                      {creator.name}
                     </span>
                   </span>
                 </div>
