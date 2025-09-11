@@ -7,7 +7,7 @@
     "web": "npx serve -s . -l 3000",
     "web:dev": "nodemon --watch . --ext html,js,css --ignore node_modules --ignore backend --exec \"npx serve -s . -l 3000\"",
     "server": "node backend/src/server.js",
-    "server:dev": "nodemon backend/src/server.js --watch backend/src --ext js",
+    "server:dev": "nodemon backend/src/server.js",
     "dev": "concurrently \"npm run dynamodb:start\" \"npm run server:dev\" \"npm run web:dev\"",
     "build": "echo 'Build complete - static files ready for deployment'",
     "test": "echo 'No tests configured yet'",
