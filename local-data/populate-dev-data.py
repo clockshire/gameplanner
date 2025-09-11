@@ -262,14 +262,30 @@ class DataPopulator:
             ],
         }
 
-        # Define event data
+        # Define event data - past and future events for each venue
         events_data = [
+            # Monkey Puzzle - Past Event
+            {
+                "name": "Board Game Championship - Monkey Puzzle",
+                "description": "Monthly board game tournament featuring strategy games. Winners receive prizes!",
+                "eventDate": "2024-06-15",
+                "startTime": "14:00",
+                "endDate": "2024-06-15",
+                "endTime": "20:00",
+                "venueName": "Monkey Puzzle (Farnborough)",
+                "maxParticipants": 25,
+                "entryFee": 5,
+                "eventType": "SOCIAL",
+                "isPublic": True,
+                "requiresApproval": False,
+            },
+            # Monkey Puzzle - Future Event
             {
                 "name": "Board Game Night - Monkey Puzzle",
                 "description": "Weekly board game night at Monkey Puzzle. Bring your own games or play ours!",
-                "eventDate": "2024-02-15",
+                "eventDate": "2024-04-15",
                 "startTime": "18:00",
-                "endDate": "2024-02-15",
+                "endDate": "2024-04-15",
                 "endTime": "22:00",
                 "venueName": "Monkey Puzzle (Farnborough)",
                 "maxParticipants": 30,
@@ -278,12 +294,28 @@ class DataPopulator:
                 "isPublic": True,
                 "requiresApproval": False,
             },
+            # DoubleTree - Past Event
+            {
+                "name": "Q1 Corporate Retreat - DoubleTree",
+                "description": "Quarterly corporate retreat with team building activities and presentations.",
+                "eventDate": "2024-07-10",
+                "startTime": "08:00",
+                "endDate": "2024-07-10",
+                "endTime": "18:00",
+                "venueName": "DoubleTree by Hilton Southampton",
+                "maxParticipants": 80,
+                "entryFee": 75,
+                "eventType": "CORPORATE",
+                "isPublic": False,
+                "requiresApproval": True,
+            },
+            # DoubleTree - Future Event
             {
                 "name": "Corporate Team Building - DoubleTree",
                 "description": "Team building event with various activities and games.",
-                "eventDate": "2024-02-20",
+                "eventDate": "2024-04-20",
                 "startTime": "09:00",
-                "endDate": "2024-02-20",
+                "endDate": "2024-04-20",
                 "endTime": "17:00",
                 "venueName": "DoubleTree by Hilton Southampton",
                 "maxParticipants": 100,
