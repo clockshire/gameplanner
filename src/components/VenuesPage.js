@@ -15,6 +15,8 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [venueRooms, setVenueRooms] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [venueToDelete, setVenueToDelete] = useState(null);
 
   /**
    * Fetch venues from the API
@@ -102,34 +104,23 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
   };
 
   /**
-   * Handle venue deletion
+   * Handle venue deletion request
    * @param {string} venueId - Venue ID to delete
+   * @param {string} venueName - Venue name for display
    */
-  const handleDeleteVenue = async (venueId) => {
-    if (!confirm('Are you sure you want to delete this venue?')) {
-      return;
-    }
+  const handleDeleteVenue = (venueId, venueName) => {
+    setVenueToDelete({ id: venueId, name: venueName });
+    setShowDeleteModal(true);
+  };
 
-    try {
-      const response = await fetch(
-        `http://localhost:3001/api/venues/${venueId}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Refresh the venues list
-        fetchVenues();
-      } else {
-        alert(result.message || 'Failed to delete venue');
-      }
-    } catch (err) {
-      console.error('Error deleting venue:', err);
-      alert('Failed to delete venue');
-    }
+  /**
+   * Handle venue deletion completion
+   */
+  const handleVenueDeleted = () => {
+    // Refresh the venues list
+    fetchVenues();
+    setShowDeleteModal(false);
+    setVenueToDelete(null);
   };
 
   // Fetch venues on component mount
@@ -243,7 +234,7 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
                         {venue.venueName}
                       </h3>
                       <button
-                        onClick={() => handleDeleteVenue(venue.venueId)}
+                        onClick={() => handleDeleteVenue(venue.venueId, venue.venueName)}
                         className="text-red-400 hover:text-red-300 transition-colors"
                         title="Delete venue"
                       >
@@ -483,6 +474,18 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onVenueCreated={handleVenueCreated}
+        />
+
+        {/* Delete Venue Modal */}
+        <DeleteVenueModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setVenueToDelete(null);
+          }}
+          venueId={venueToDelete?.id}
+          venueName={venueToDelete?.name}
+          onVenueDeleted={handleVenueDeleted}
         />
       </div>
     </div>
