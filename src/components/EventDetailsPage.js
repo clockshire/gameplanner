@@ -391,10 +391,10 @@ function EventDetailsPage({
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4">
                 <button
                   onClick={onBack}
-                  className="flex items-center text-gray-400 hover:text-white transition-colors"
+                  className="flex items-center text-gray-400 hover:text-white transition-colors mb-4"
                 >
                   <svg
                     className="h-5 w-5 mr-2"
@@ -412,18 +412,80 @@ function EventDetailsPage({
                   Back to Events
                 </button>
 
-                {/* Action Buttons - Only show for creator and non-completed events */}
-                {currentUser &&
-                  event.createdBy === currentUser.userId &&
-                  event.status !== 'completed' && (
-                    <div className="flex space-x-3">
-                      {onEditEvent && (
-                        <button
-                          onClick={() => onEditEvent(event)}
-                          className="flex items-center bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-colors"
-                        >
+                {/* Action Buttons or Completed Message */}
+                {currentUser && event.createdBy === currentUser.userId && (
+                  <>
+                    {event.status !== 'completed' ? (
+                      <div className="flex space-x-3">
+                        {onEditEvent && (
+                          <button
+                            onClick={() => onEditEvent(event)}
+                            className="flex items-center bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-colors"
+                          >
+                            <svg
+                              className="h-4 w-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                            Edit Event
+                          </button>
+                        )}
+                        {onManageRooms && (
+                          <button
+                            onClick={() => onManageRooms(event)}
+                            className="flex items-center bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors"
+                          >
+                            <svg
+                              className="h-4 w-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                              />
+                            </svg>
+                            Manage Rooms
+                          </button>
+                        )}
+                        {onDeleteEvent && (
+                          <button
+                            onClick={() => onDeleteEvent(event)}
+                            className="flex items-center bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg transition-colors"
+                          >
+                            <svg
+                              className="h-4 w-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            Delete Event
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-800 border border-gray-600 rounded-lg p-4">
+                        <div className="flex items-center text-gray-300">
                           <svg
-                            className="h-4 w-4 mr-2"
+                            className="h-5 w-5 mr-2 text-gray-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -432,56 +494,18 @@ function EventDetailsPage({
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                             />
                           </svg>
-                          Edit Event
-                        </button>
-                      )}
-                      {onManageRooms && (
-                        <button
-                          onClick={() => onManageRooms(event)}
-                          className="flex items-center bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg transition-colors"
-                        >
-                          <svg
-                            className="h-4 w-4 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                            />
-                          </svg>
-                          Manage Rooms
-                        </button>
-                      )}
-                      {onDeleteEvent && (
-                        <button
-                          onClick={() => onDeleteEvent(event)}
-                          className="flex items-center bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg transition-colors"
-                        >
-                          <svg
-                            className="h-4 w-4 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                          Delete Event
-                        </button>
-                      )}
-                    </div>
-                  )}
+                          <span>
+                            This event is completed and can no longer be
+                            modified.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               <h1 className="text-3xl font-bold text-white mb-2">
