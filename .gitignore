@@ -463,3 +463,4 @@ tags
 
 # don't manage our local dynamodb data
 docker/dynamodb/shared-local-instance.db
+venv/
