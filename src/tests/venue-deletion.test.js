@@ -145,25 +145,63 @@ async function setupTestData() {
 async function cleanupTestData(testData) {
   console.log('🧹 Cleaning up test data...');
 
+  let cleanupErrors = [];
+
   // Delete event
   if (testData.event) {
-    await apiRequest('DELETE', `/events/${testData.event.eventId}`);
+    try {
+      await apiRequest('DELETE', `/events/${testData.event.eventId}`);
+    } catch (error) {
+      cleanupErrors.push(
+        `Failed to delete event ${testData.event.eventId}: ${error.message}`
+      );
+    }
   }
 
   // Delete rooms
   if (testData.room1) {
-    await apiRequest('DELETE', `/rooms/${testData.room1.roomId}`);
+    try {
+      await apiRequest('DELETE', `/rooms/${testData.room1.roomId}`);
+    } catch (error) {
+      cleanupErrors.push(
+        `Failed to delete room ${testData.room1.roomId}: ${error.message}`
+      );
+    }
   }
   if (testData.room2) {
-    await apiRequest('DELETE', `/rooms/${testData.room2.roomId}`);
+    try {
+      await apiRequest('DELETE', `/rooms/${testData.room2.roomId}`);
+    } catch (error) {
+      cleanupErrors.push(
+        `Failed to delete room ${testData.room2.roomId}: ${error.message}`
+      );
+    }
   }
 
   // Delete venues
   if (testData.venue1) {
-    await apiRequest('DELETE', `/venues/${testData.venue1.venueId}`);
+    try {
+      await apiRequest('DELETE', `/venues/${testData.venue1.venueId}`);
+    } catch (error) {
+      cleanupErrors.push(
+        `Failed to delete venue ${testData.venue1.venueId}: ${error.message}`
+      );
+    }
   }
   if (testData.venue2) {
-    await apiRequest('DELETE', `/venues/${testData.venue2.venueId}`);
+    try {
+      await apiRequest('DELETE', `/venues/${testData.venue2.venueId}`);
+    } catch (error) {
+      cleanupErrors.push(
+        `Failed to delete venue ${testData.venue2.venueId}: ${error.message}`
+      );
+    }
+  }
+
+  // Report any cleanup errors
+  if (cleanupErrors.length > 0) {
+    console.log('⚠️  Cleanup errors:');
+    cleanupErrors.forEach((error) => console.log(`   - ${error}`));
   }
 }
 
@@ -311,7 +349,8 @@ const testDeleteVenueWithRoomsSucceeds =
       );
       assert(room2Check.status === 404, 'Room 2 should be deleted');
     } finally {
-      // Cleanup is not needed as we deleted everything
+      // Cleanup remaining entities that weren't deleted by the test
+      await cleanupTestData(testData);
     }
   });
 

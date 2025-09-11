@@ -97,6 +97,112 @@ async function checkServer() {
 }
 
 /**
+ * Global cleanup function to remove any leftover test entities
+ */
+async function globalCleanup() {
+  console.log('🧹 Performing global cleanup of leftover test entities...');
+
+  const API_BASE_URL = 'http://localhost:3001/api';
+
+  try {
+    // Get all entities
+    const [eventsResponse, roomsResponse, venuesResponse] = await Promise.all([
+      fetch(`${API_BASE_URL}/events`),
+      fetch(`${API_BASE_URL}/rooms`),
+      fetch(`${API_BASE_URL}/venues`),
+    ]);
+
+    const events = await eventsResponse.json();
+    const rooms = await roomsResponse.json();
+    const venues = await venuesResponse.json();
+
+    let cleanupCount = 0;
+
+    // Delete all events
+    if (events.success && events.data && events.data.length > 0) {
+      for (const event of events.data) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/events/${event.eventId}`,
+            { method: 'DELETE' }
+          );
+          if (response.ok) {
+            cleanupCount++;
+          } else {
+            console.log(
+              `   ⚠️  Failed to delete event ${event.eventId}: HTTP ${response.status}`
+            );
+          }
+        } catch (error) {
+          console.log(
+            `   ⚠️  Failed to delete event ${event.eventId}: ${error.message}`
+          );
+        }
+        // Small delay to avoid overwhelming the server
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    // Delete all rooms
+    if (rooms.success && rooms.data && rooms.data.length > 0) {
+      for (const room of rooms.data) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/rooms/${room.roomId}`, {
+            method: 'DELETE',
+          });
+          if (response.ok) {
+            cleanupCount++;
+          } else {
+            console.log(
+              `   ⚠️  Failed to delete room ${room.roomId}: HTTP ${response.status}`
+            );
+          }
+        } catch (error) {
+          console.log(
+            `   ⚠️  Failed to delete room ${room.roomId}: ${error.message}`
+          );
+        }
+        // Small delay to avoid overwhelming the server
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    // Delete all venues
+    if (venues.success && venues.data && venues.data.length > 0) {
+      for (const venue of venues.data) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/venues/${venue.venueId}`,
+            { method: 'DELETE' }
+          );
+          if (response.ok) {
+            cleanupCount++;
+          } else {
+            console.log(
+              `   ⚠️  Failed to delete venue ${venue.venueId}: HTTP ${response.status}`
+            );
+          }
+        } catch (error) {
+          console.log(
+            `   ⚠️  Failed to delete venue ${venue.venueId}: ${error.message}`
+          );
+        }
+        // Small delay to avoid overwhelming the server
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    if (cleanupCount > 0) {
+      console.log(`✅ Cleaned up ${cleanupCount} leftover entities`);
+    } else {
+      console.log('✅ No leftover entities found');
+    }
+  } catch (error) {
+    console.log(`⚠️  Global cleanup failed: ${error.message}`);
+  }
+}
+
+/**
  * Main test runner function
  */
 async function runAllTests() {
@@ -108,6 +214,9 @@ async function runAllTests() {
   if (!serverRunning) {
     process.exit(1);
   }
+
+  // Perform global cleanup before running tests
+  await globalCleanup();
 
   // Discover test files
   const testFiles = discoverTestFiles();

@@ -88,12 +88,14 @@ let createdEntities = {
 async function cleanupCreatedEntities() {
   console.log('🧹 Cleaning up created entities...');
 
+  let cleanupErrors = [];
+
   // Delete events first (they reference venues)
   for (const eventId of createdEntities.events) {
     try {
       await apiRequest('DELETE', `/events/${eventId}`);
     } catch (error) {
-      // Ignore cleanup errors
+      cleanupErrors.push(`Failed to delete event ${eventId}: ${error.message}`);
     }
   }
 
@@ -102,7 +104,7 @@ async function cleanupCreatedEntities() {
     try {
       await apiRequest('DELETE', `/rooms/${roomId}`);
     } catch (error) {
-      // Ignore cleanup errors
+      cleanupErrors.push(`Failed to delete room ${roomId}: ${error.message}`);
     }
   }
 
@@ -111,8 +113,14 @@ async function cleanupCreatedEntities() {
     try {
       await apiRequest('DELETE', `/venues/${venueId}`);
     } catch (error) {
-      // Ignore cleanup errors
+      cleanupErrors.push(`Failed to delete venue ${venueId}: ${error.message}`);
     }
+  }
+
+  // Report any cleanup errors
+  if (cleanupErrors.length > 0) {
+    console.log('⚠️  Cleanup errors:');
+    cleanupErrors.forEach((error) => console.log(`   - ${error}`));
   }
 
   // Reset tracking
