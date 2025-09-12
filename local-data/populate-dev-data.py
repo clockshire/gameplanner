@@ -174,6 +174,34 @@ class DataPopulator:
             print(f"❌ Failed to create event {event_name}: {e}")
             return None
 
+    def assign_room_to_event(
+        self, event_id: str, room_id: str, event_data: Dict
+    ) -> bool:
+        """Assign a room to an event with availability matching the event time."""
+        try:
+            # Create event room assignment data
+            event_room_data = {
+                "eventId": event_id,
+                "roomId": room_id,
+                "availableFrom": event_data["eventDate"]
+                + "T"
+                + event_data["startTime"]
+                + ":00",
+                "availableTo": event_data["endDate"]
+                + "T"
+                + event_data["endTime"]
+                + ":00",
+            }
+
+            response = self.session.post(
+                f"{self.api_base_url}/event-rooms", json=event_room_data
+            )
+            response.raise_for_status()
+            return True
+        except requests.RequestException as e:
+            print(f"   ⚠️  Failed to assign room {room_id} to event {event_id}: {e}")
+            return False
+
     def populate_data(self) -> None:
         """Main method to populate all development data."""
         print("🚀 Starting development data population...")
@@ -434,6 +462,24 @@ class DataPopulator:
             event_id = self.create_event(event_data)
             if event_id:
                 created_events.append(event_id)
+
+                # For Monkey Puzzle events, assign all available rooms
+                if venue_name == "Monkey Puzzle (Farnborough)":
+                    print(f"   🏠 Assigning rooms to {event_data['name']}...")
+                    venue_id = created_venues[venue_name]
+
+                    # Find all rooms for this venue
+                    for room_id, room_info in created_rooms.items():
+                        if room_info["venueName"] == venue_name:
+                            success = self.assign_room_to_event(
+                                event_id, room_id, event_data
+                            )
+                            if success:
+                                print(f"     ✅ Assigned room: {room_info['roomName']}")
+                            else:
+                                print(
+                                    f"     ❌ Failed to assign room: {room_info['roomName']}"
+                                )
 
         # Summary
         print(f"\n🎯 Population Complete!")
