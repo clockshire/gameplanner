@@ -9,23 +9,33 @@ stop-local-dynamodb:
 list-tables:
 	@aws dynamodb list-tables --endpoint-url http://localhost:8000 --region us-east-1 --query 'TableNames'
 
+# DynamoDB configuration
+DYNAMODB_ENDPOINT = http://localhost:8000
+DYNAMODB_REGION = us-east-1
+AWS_CMD = aws dynamodb scan --endpoint-url $(DYNAMODB_ENDPOINT) --region $(DYNAMODB_REGION)
+
+# Individual table scan targets
 scan-bookings:
-	@aws dynamodb scan --table-name bookings --endpoint-url http://localhost:8000 --region us-east-1
+	@$(AWS_CMD) --table-name bookings
 
 scan-events:
-	@aws dynamodb scan --table-name events --endpoint-url http://localhost:8000 --region us-east-1
+	@$(AWS_CMD) --table-name events
 
 scan-games:
-	@aws dynamodb scan --table-name games --endpoint-url http://localhost:8000 --region us-east-1
+	@$(AWS_CMD) --table-name games
 
 scan-rooms:
-	@aws dynamodb scan --table-name rooms --endpoint-url http://localhost:8000 --region us-east-1
+	@$(AWS_CMD) --table-name rooms
 
 scan-users:
-	@aws dynamodb scan --table-name users --endpoint-url http://localhost:8000 --region us-east-1
+	@$(AWS_CMD) --table-name users
 
 scan-venues:
-	@aws dynamodb scan --table-name venues --endpoint-url http://localhost:8000 --region us-east-1
+	@$(AWS_CMD) --table-name venues
+
+# Convenience target to scan all tables
+scan-all: scan-bookings scan-events scan-games scan-rooms scan-users scan-venues
+	@echo "✅ Scanned all tables"
 
 check-duplicate-users:
 	@cd backend && node scripts/check-duplicate-users.js
