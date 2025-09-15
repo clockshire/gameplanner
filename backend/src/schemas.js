@@ -337,6 +337,73 @@ const invitationsTableSchema = {
   BillingMode: 'PAY_PER_REQUEST',
 };
 
+const eventParticipantsTableSchema = {
+  TableName: 'eventParticipants',
+  KeySchema: [
+    {
+      AttributeName: 'PK',
+      KeyType: 'HASH', // Partition key - EVENT#eventId
+    },
+    {
+      AttributeName: 'SK',
+      KeyType: 'RANGE', // Sort key - USER#userId
+    },
+  ],
+  AttributeDefinitions: [
+    {
+      AttributeName: 'PK',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'SK',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'eventId',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'userId',
+      AttributeType: 'S', // String
+    },
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'EventParticipantsIndex',
+      KeySchema: [
+        {
+          AttributeName: 'eventId',
+          KeyType: 'HASH',
+        },
+        {
+          AttributeName: 'SK',
+          KeyType: 'RANGE',
+        },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+    },
+    {
+      IndexName: 'UserEventsIndex',
+      KeySchema: [
+        {
+          AttributeName: 'userId',
+          KeyType: 'HASH',
+        },
+        {
+          AttributeName: 'PK',
+          KeyType: 'RANGE',
+        },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+    },
+  ],
+  BillingMode: 'PAY_PER_REQUEST',
+};
+
 module.exports = {
   usersTableSchema,
   eventsTableSchema,
@@ -345,4 +412,5 @@ module.exports = {
   gamesTableSchema,
   bookingsTableSchema,
   invitationsTableSchema,
+  eventParticipantsTableSchema,
 };

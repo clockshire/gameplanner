@@ -91,23 +91,30 @@ const testServerHealth = test('Server health check should work', async () => {
 
 const testApiEndpointsExist =
   test('API endpoints should be accessible', async () => {
-    // Test venues endpoint
+    // Test venues endpoint (should require authentication)
     const venuesResponse = await apiRequest('GET', '/venues');
-    assert(venuesResponse.success, 'Venues endpoint should be accessible');
+    // This should fail with 401 Unauthorized since we're not authenticated
     assert(
-      venuesResponse.data.success === true,
-      'Venues response should indicate success'
+      !venuesResponse.success,
+      'Venues endpoint should require authentication'
+    );
+    assert(
+      venuesResponse.status === 401,
+      'Should return 401 Unauthorized status'
     );
 
-    // Test events endpoint
+    // Test events endpoint (should also require authentication)
     const eventsResponse = await apiRequest('GET', '/events');
-    assert(eventsResponse.success, 'Events endpoint should be accessible');
     assert(
-      eventsResponse.data.success === true,
-      'Events response should indicate success'
+      !eventsResponse.success,
+      'Events endpoint should require authentication'
+    );
+    assert(
+      eventsResponse.status === 401,
+      'Should return 401 Unauthorized status'
     );
 
-    // Test rooms endpoint
+    // Test rooms endpoint (doesn't require authentication)
     const roomsResponse = await apiRequest('GET', '/rooms');
     assert(roomsResponse.success, 'Rooms endpoint should be accessible');
     assert(

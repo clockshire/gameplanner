@@ -12,16 +12,21 @@ let testsPassed = 0;
 let testsFailed = 0;
 const testResults = [];
 
+// Global test user and session token
+let testUser = null;
+let sessionToken = null;
+
 /**
  * Helper function to make API requests
  */
-async function apiRequest(method, endpoint, data = null) {
+async function apiRequest(method, endpoint, data = null, headers = {}) {
   const API_BASE_URL = 'http://localhost:3001/api';
   const url = `${API_BASE_URL}${endpoint}`;
   const options = {
     method,
     headers: {
       'Content-Type': 'application/json',
+      ...headers,
     },
   };
 
@@ -48,12 +53,86 @@ async function apiRequest(method, endpoint, data = null) {
 }
 
 /**
+ * Helper function to make authenticated API requests
+ */
+async function authenticatedApiRequest(method, endpoint, data = null) {
+  await setupTestUser(); // Ensure user is authenticated
+  return apiRequest(method, endpoint, data, {
+    Authorization: `Bearer ${sessionToken}`,
+  });
+}
+
+/**
+ * Helper function to authenticate and get session token
+ */
+async function authenticateUser(email, password) {
+  const response = await apiRequest('POST', '/auth/login', {
+    email,
+    password,
+  });
+
+  if (response.success && response.data.success) {
+    return response.data.data.sessionToken;
+  }
+  return null;
+}
+
+/**
+ * Helper function to create a test user
+ */
+async function createTestUser(email, name, password) {
+  const response = await apiRequest('POST', '/auth/signup', {
+    email,
+    name,
+    password,
+  });
+  return response;
+}
+
+/**
+ * Setup test user and authentication
+ */
+async function setupTestUser() {
+  if (testUser && sessionToken) {
+    return; // Already set up
+  }
+
+  // Try to authenticate first (in case user already exists)
+  sessionToken = await authenticateUser('test@creation.com', 'password123');
+
+  if (sessionToken) {
+    // User exists and we're authenticated
+    testUser = { email: 'test@creation.com', name: 'Test User' };
+    return;
+  }
+
+  // User doesn't exist, create them
+  const userResponse = await createTestUser(
+    'test@creation.com',
+    'Test User',
+    'password123'
+  );
+  if (!userResponse.success) {
+    throw new Error('Failed to create test user');
+  }
+
+  testUser = userResponse.data.data.user;
+
+  // Authenticate user
+  sessionToken = await authenticateUser('test@creation.com', 'password123');
+  if (!sessionToken) {
+    throw new Error('Failed to authenticate test user');
+  }
+}
+
+/**
  * Test helper function
  */
 function test(name, testFn) {
   return async () => {
     try {
       console.log(`🧪 Testing: ${name}`);
+      await setupTestUser(); // Ensure user is authenticated
       await testFn();
       console.log(`✅ PASS: ${name}`);
       testsPassed++;
@@ -93,7 +172,7 @@ async function cleanupCreatedEntities() {
   // Delete events first (they reference venues)
   for (const eventId of createdEntities.events) {
     try {
-      await apiRequest('DELETE', `/events/${eventId}`);
+      await authenticatedApiRequest('DELETE', `/events/${eventId}`);
     } catch (error) {
       cleanupErrors.push(`Failed to delete event ${eventId}: ${error.message}`);
     }
@@ -102,7 +181,7 @@ async function cleanupCreatedEntities() {
   // Delete rooms (they reference venues)
   for (const roomId of createdEntities.rooms) {
     try {
-      await apiRequest('DELETE', `/rooms/${roomId}`);
+      await authenticatedApiRequest('DELETE', `/rooms/${roomId}`);
     } catch (error) {
       cleanupErrors.push(`Failed to delete room ${roomId}: ${error.message}`);
     }
@@ -111,7 +190,7 @@ async function cleanupCreatedEntities() {
   // Delete venues last
   for (const venueId of createdEntities.venues) {
     try {
-      await apiRequest('DELETE', `/venues/${venueId}`);
+      await authenticatedApiRequest('DELETE', `/venues/${venueId}`);
     } catch (error) {
       cleanupErrors.push(`Failed to delete venue ${venueId}: ${error.message}`);
     }
@@ -143,7 +222,11 @@ const testCreateVenueWithValidData =
       mapLink: 'https://maps.google.com/testvenue',
     };
 
-    const response = await apiRequest('POST', '/venues', venueData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/venues',
+      venueData
+    );
 
     assert(response.success, 'Venue creation should succeed');
     assert(response.status === 201, 'Should return 201 Created status');
@@ -196,7 +279,11 @@ const testCreateVenueWithMinimalData =
       capacity: 25,
     };
 
-    const response = await apiRequest('POST', '/venues', venueData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/venues',
+      venueData
+    );
 
     assert(response.success, 'Minimal venue creation should succeed');
     assert(response.status === 201, 'Should return 201 Created status');
@@ -242,7 +329,11 @@ const testCreateVenueWithMissingName =
       capacity: 30,
     };
 
-    const response = await apiRequest('POST', '/venues', venueData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/venues',
+      venueData
+    );
 
     assert(!response.success, 'Venue creation without name should fail');
     assert(response.status === 400, 'Should return 400 Bad Request status');
@@ -260,7 +351,11 @@ const testCreateVenueWithMissingAddress =
       capacity: 30,
     };
 
-    const response = await apiRequest('POST', '/venues', venueData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/venues',
+      venueData
+    );
 
     assert(!response.success, 'Venue creation without address should fail');
     assert(response.status === 400, 'Should return 400 Bad Request status');
@@ -283,7 +378,11 @@ const testCreateRoomWithValidData =
       capacity: 100,
     };
 
-    const venueResponse = await apiRequest('POST', '/venues', venueData);
+    const venueResponse = await authenticatedApiRequest(
+      'POST',
+      '/venues',
+      venueData
+    );
     assert(
       venueResponse.success,
       'Venue creation should succeed for room test'
@@ -300,7 +399,7 @@ const testCreateRoomWithValidData =
       amenities: ['Projector', 'Whiteboard', 'WiFi', 'Air Conditioning'],
     };
 
-    const response = await apiRequest('POST', '/rooms', roomData);
+    const response = await authenticatedApiRequest('POST', '/rooms', roomData);
 
     assert(response.success, 'Room creation should succeed');
     assert(response.status === 201, 'Should return 201 Created status');
@@ -348,7 +447,11 @@ const testCreateRoomWithMinimalData =
         address: '456 Minimal Room Street',
         capacity: 50,
       };
-      const venueResponse = await apiRequest('POST', '/venues', venueData);
+      const venueResponse = await authenticatedApiRequest(
+        'POST',
+        '/venues',
+        venueData
+      );
       venueId = venueResponse.data.data.venueId;
       createdEntities.venues.push(venueId);
     }
@@ -359,7 +462,7 @@ const testCreateRoomWithMinimalData =
       capacity: 10,
     };
 
-    const response = await apiRequest('POST', '/rooms', roomData);
+    const response = await authenticatedApiRequest('POST', '/rooms', roomData);
 
     assert(response.success, 'Minimal room creation should succeed');
     assert(response.status === 201, 'Should return 201 Created status');
@@ -403,7 +506,11 @@ const testCreateRoomWithMissingName =
         address: '789 Error Street',
         capacity: 50,
       };
-      const venueResponse = await apiRequest('POST', '/venues', venueData);
+      const venueResponse = await authenticatedApiRequest(
+        'POST',
+        '/venues',
+        venueData
+      );
       venueId = venueResponse.data.data.venueId;
       createdEntities.venues.push(venueId);
     }
@@ -413,7 +520,7 @@ const testCreateRoomWithMissingName =
       capacity: 15,
     };
 
-    const response = await apiRequest('POST', '/rooms', roomData);
+    const response = await authenticatedApiRequest('POST', '/rooms', roomData);
 
     assert(!response.success, 'Room creation without name should fail');
     assert(response.status === 400, 'Should return 400 Bad Request status');
@@ -431,7 +538,7 @@ const testCreateRoomWithMissingVenueId =
       capacity: 15,
     };
 
-    const response = await apiRequest('POST', '/rooms', roomData);
+    const response = await authenticatedApiRequest('POST', '/rooms', roomData);
 
     assert(!response.success, 'Room creation without venue ID should fail');
     assert(response.status === 400, 'Should return 400 Bad Request status');
@@ -455,7 +562,11 @@ const testCreateEventWithValidData =
         address: '123 Event Street',
         capacity: 100,
       };
-      const venueResponse = await apiRequest('POST', '/venues', venueData);
+      const venueResponse = await authenticatedApiRequest(
+        'POST',
+        '/venues',
+        venueData
+      );
       venueId = venueResponse.data.data.venueId;
       createdEntities.venues.push(venueId);
     }
@@ -472,7 +583,11 @@ const testCreateEventWithValidData =
       createdBy: 'a6f3aec2-7d19-48d5-85a4-7602da37e79f', // Chisel's user ID
     };
 
-    const response = await apiRequest('POST', '/events', eventData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/events',
+      eventData
+    );
 
     assert(response.success, 'Event creation should succeed');
     assert(response.status === 201, 'Should return 201 Created status');
@@ -536,7 +651,11 @@ const testCreateEventWithMinimalData =
         address: '456 Minimal Event Street',
         capacity: 50,
       };
-      const venueResponse = await apiRequest('POST', '/venues', venueData);
+      const venueResponse = await authenticatedApiRequest(
+        'POST',
+        '/venues',
+        venueData
+      );
       venueId = venueResponse.data.data.venueId;
       createdEntities.venues.push(venueId);
     }
@@ -552,7 +671,11 @@ const testCreateEventWithMinimalData =
       createdBy: 'a6f3aec2-7d19-48d5-85a4-7602da37e79f',
     };
 
-    const response = await apiRequest('POST', '/events', eventData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/events',
+      eventData
+    );
 
     assert(response.success, 'Minimal event creation should succeed');
     assert(response.status === 201, 'Should return 201 Created status');
@@ -592,7 +715,11 @@ const testCreateEventWithMissingName =
         address: '789 Error Event Street',
         capacity: 50,
       };
-      const venueResponse = await apiRequest('POST', '/venues', venueData);
+      const venueResponse = await authenticatedApiRequest(
+        'POST',
+        '/venues',
+        venueData
+      );
       venueId = venueResponse.data.data.venueId;
       createdEntities.venues.push(venueId);
     }
@@ -607,7 +734,11 @@ const testCreateEventWithMissingName =
       createdBy: 'a6f3aec2-7d19-48d5-85a4-7602da37e79f',
     };
 
-    const response = await apiRequest('POST', '/events', eventData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/events',
+      eventData
+    );
 
     assert(!response.success, 'Event creation without name should fail');
     assert(response.status === 400, 'Should return 400 Bad Request status');
@@ -630,7 +761,11 @@ const testCreateEventWithMissingVenueId =
       createdBy: 'a6f3aec2-7d19-48d5-85a4-7602da37e79f',
     };
 
-    const response = await apiRequest('POST', '/events', eventData);
+    const response = await authenticatedApiRequest(
+      'POST',
+      '/events',
+      eventData
+    );
 
     assert(!response.success, 'Event creation without venue ID should fail');
     assert(response.status === 400, 'Should return 400 Bad Request status');
@@ -654,7 +789,11 @@ const testCreateVenueRoomAndEvent =
       capacity: 100,
     };
 
-    const venueResponse = await apiRequest('POST', '/venues', venueData);
+    const venueResponse = await authenticatedApiRequest(
+      'POST',
+      '/venues',
+      venueData
+    );
     assert(venueResponse.success, 'Venue creation should succeed');
     const venueId = venueResponse.data.data.venueId;
     createdEntities.venues.push(venueId);
@@ -669,7 +808,11 @@ const testCreateVenueRoomAndEvent =
       amenities: ['Gaming Tables', 'Storage', 'WiFi'],
     };
 
-    const roomResponse = await apiRequest('POST', '/rooms', roomData);
+    const roomResponse = await authenticatedApiRequest(
+      'POST',
+      '/rooms',
+      roomData
+    );
     assert(roomResponse.success, 'Room creation should succeed');
     const roomId = roomResponse.data.data.roomId;
     createdEntities.rooms.push(roomId);
@@ -687,7 +830,11 @@ const testCreateVenueRoomAndEvent =
       createdBy: 'a6f3aec2-7d19-48d5-85a4-7602da37e79f',
     };
 
-    const eventResponse = await apiRequest('POST', '/events', eventData);
+    const eventResponse = await authenticatedApiRequest(
+      'POST',
+      '/events',
+      eventData
+    );
     assert(eventResponse.success, 'Event creation should succeed');
     const eventId = eventResponse.data.data.eventId;
     createdEntities.events.push(eventId);

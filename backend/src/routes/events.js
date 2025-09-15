@@ -6,6 +6,7 @@
 const express = require('express');
 const EventService = require('../events');
 const { authenticateUser } = require('../middleware/auth');
+const { checkEventAccessMiddleware, requireEventOwnership } = require('../middleware/eventAccess');
 const router = express.Router();
 
 const eventService = new EventService();
@@ -154,29 +155,30 @@ router.get('/:eventId/public', async (req, res) => {
 
 /**
  * GET /api/events/:eventId
- * Get a specific event by ID (only if user owns it)
+ * Get a specific event by ID (if user owns it or is a participant)
  */
-router.get('/:eventId', authenticateUser, async (req, res) => {
+router.get('/:eventId', authenticateUser, checkEventAccessMiddleware, async (req, res) => {
   try {
     const { eventId } = req.params;
-
-    // Check if user owns this event
-    const ownershipCheck = await eventService.checkEventOwnership(
-      eventId,
-      req.user.userId
-    );
-    if (!ownershipCheck.success || !ownershipCheck.ownsEvent) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied',
-        message: 'You can only view events you created',
-      });
-    }
 
     const result = await eventService.getEvent(eventId);
 
     if (result.success) {
-      res.status(200).json(result);
+      // Add access level information to the response
+      const responseData = {
+        ...result.data,
+        userAccess: {
+          level: req.eventAccess.level,
+          isOwner: req.eventAccess.isOwner,
+          isParticipant: req.eventAccess.isParticipant,
+        },
+      };
+
+      res.status(200).json({
+        success: true,
+        data: responseData,
+        message: 'Event details retrieved',
+      });
     } else {
       res.status(404).json(result);
     }
@@ -194,7 +196,7 @@ router.get('/:eventId', authenticateUser, async (req, res) => {
  * PUT /api/events/:eventId
  * Update a specific event (only if user owns it)
  */
-router.put('/:eventId', authenticateUser, async (req, res) => {
+router.put('/:eventId', authenticateUser, requireEventOwnership, async (req, res) => {
   try {
     const { eventId } = req.params;
     const {
@@ -210,18 +212,7 @@ router.put('/:eventId', authenticateUser, async (req, res) => {
       assignedRoomIds,
     } = req.body;
 
-    // Check if user owns this event
-    const ownershipCheck = await eventService.checkEventOwnership(
-      eventId,
-      req.user.userId
-    );
-    if (!ownershipCheck.success || !ownershipCheck.ownsEvent) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied',
-        message: 'You can only update events you created',
-      });
-    }
+    // Ownership check is handled by requireEventOwnership middleware
 
     // Map frontend field names to backend field names
     const updateData = {
@@ -265,22 +256,11 @@ router.put('/:eventId', authenticateUser, async (req, res) => {
  * DELETE /api/events/:eventId
  * Delete a specific event (only if user owns it)
  */
-router.delete('/:eventId', authenticateUser, async (req, res) => {
+router.delete('/:eventId', authenticateUser, requireEventOwnership, async (req, res) => {
   try {
     const { eventId } = req.params;
 
-    // Check if user owns this event
-    const ownershipCheck = await eventService.checkEventOwnership(
-      eventId,
-      req.user.userId
-    );
-    if (!ownershipCheck.success || !ownershipCheck.ownsEvent) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied',
-        message: 'You can only delete events you created',
-      });
-    }
+    // Ownership check is handled by requireEventOwnership middleware
 
     const result = await eventService.deleteEvent(eventId);
 

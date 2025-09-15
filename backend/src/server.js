@@ -12,6 +12,7 @@ const eventRoutes = require('./routes/events');
 const roomRoutes = require('./routes/rooms');
 const eventRoomRoutes = require('./routes/eventRooms');
 const invitationRoutes = require('./routes/invitations');
+const eventParticipantRoutes = require('./routes/eventParticipants');
 const { testConnection, createTableIfNotExists } = require('./dynamodb');
 const {
   usersTableSchema,
@@ -19,6 +20,7 @@ const {
   eventsTableSchema,
   roomsTableSchema,
   invitationsTableSchema,
+  eventParticipantsTableSchema,
 } = require('./schemas');
 
 const app = express();
@@ -42,6 +44,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/events', eventRoomRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/event-participants', eventParticipantRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -149,6 +152,18 @@ async function startServer() {
 
     if (!invitationsTableCreated) {
       console.error('❌ Failed to create invitations table');
+      process.exit(1);
+    }
+
+    // Create event participants table if it doesn't exist
+    console.log('📝 Ensuring event participants table exists...');
+    const eventParticipantsTableCreated = await createTableIfNotExists(
+      'eventParticipants',
+      eventParticipantsTableSchema
+    );
+
+    if (!eventParticipantsTableCreated) {
+      console.error('❌ Failed to create event participants table');
       process.exit(1);
     }
 

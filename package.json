@@ -7,7 +7,7 @@
     "web": "npx serve -s . -l 3000",
     "web:dev": "nodemon --watch . --ext html,js,css --ignore node_modules --ignore backend --exec \"npx serve -s . -l 3000\"",
     "server": "node backend/src/server.js",
-    "server:dev": "nodemon backend/src/server.js",
+    "server:dev": "nodemon --watch . --ext html,js,css --ignore node_modules --ignore src backend/src/server.js",
     "dev": "concurrently \"npm run dynamodb:start\" \"npm run server:dev\" \"npm run web:dev\"",
     "build": "echo 'Build complete - static files ready for deployment'",
     "dynamodb:janky-start": "docker run -d --name dynamodb-local -p 8000:8000 -v $(pwd)/docker/dynamodb:/home/dynamodblocal/data amazon/dynamodb-local:latest -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data",

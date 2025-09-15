@@ -290,7 +290,23 @@ router.delete('/:venueId', authenticateUser, async (req, res) => {
       venueId,
       req.user.userId
     );
-    if (!ownershipCheck.success || !ownershipCheck.ownsVenue) {
+    if (!ownershipCheck.success) {
+      // If venue doesn't exist, return 404
+      if (ownershipCheck.error === 'Venue not found') {
+        return res.status(404).json({
+          success: false,
+          error: 'Venue not found',
+          message: 'Venue not found',
+        });
+      }
+      // Other errors (like database issues)
+      return res.status(500).json({
+        success: false,
+        error: ownershipCheck.error,
+        message: ownershipCheck.message,
+      });
+    }
+    if (!ownershipCheck.ownsVenue) {
       return res.status(403).json({
         success: false,
         error: 'Access denied',
