@@ -24,6 +24,9 @@ scan-rooms:
 scan-users:
 	@aws dynamodb scan --table-name users --endpoint-url http://localhost:8000 --region us-east-1
 
+scan-venues:
+	@aws dynamodb scan --table-name venues --endpoint-url http://localhost:8000 --region us-east-1
+
 check-duplicate-users:
 	@cd backend && node scripts/check-duplicate-users.js
 
