@@ -33,8 +33,14 @@ scan-users:
 scan-venues:
 	@$(AWS_CMD) --table-name venues
 
+scan-invites:
+	@$(AWS_CMD) --table-name invitations
+
+scan-event-participants:
+	@$(AWS_CMD) --table-name eventParticipants
+
 # Convenience target to scan all tables
-scan-all: scan-bookings scan-events scan-games scan-rooms scan-users scan-venues
+scan-all: scan-bookings scan-events scan-games scan-invites scan-rooms scan-users scan-venues scan-event-participants
 	@echo "✅ Scanned all tables"
 
 check-duplicate-users:
