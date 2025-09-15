@@ -107,6 +107,52 @@ router.get('/', authenticateUser, async (req, res) => {
 });
 
 /**
+ * GET /api/events/:eventId/public
+ * Get a specific event by ID (public access for invitation redemption)
+ */
+router.get('/:eventId/public', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const result = await eventService.getEvent(eventId);
+
+    if (result.success) {
+      // Return only public event information
+      const publicEvent = {
+        eventId: result.data.eventId,
+        eventName: result.data.eventName,
+        description: result.data.description,
+        eventDate: result.data.eventDate,
+        endDate: result.data.endDate,
+        startTime: result.data.startTime,
+        endTime: result.data.endTime,
+        venueId: result.data.venueId,
+        maxParticipants: result.data.maxParticipants,
+        status: result.data.status,
+        createdBy: result.data.createdBy,
+        createdAt: result.data.createdAt,
+        updatedAt: result.data.updatedAt,
+      };
+
+      res.status(200).json({
+        success: true,
+        data: publicEvent,
+        message: 'Event details retrieved',
+      });
+    } else {
+      res.status(404).json(result);
+    }
+  } catch (error) {
+    console.error('Get public event error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: 'Failed to retrieve event details',
+    });
+  }
+});
+
+/**
  * GET /api/events/:eventId
  * Get a specific event by ID (only if user owns it)
  */

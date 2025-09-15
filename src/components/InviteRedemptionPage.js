@@ -13,6 +13,8 @@ function InviteRedemptionPage({ inviteCode, onBack }) {
   const { sessionToken, isAuthenticated, user } = useAuth();
   const [invitation, setInvitation] = useState(null);
   const [event, setEvent] = useState(null);
+  const [venue, setVenue] = useState(null);
+  const [creator, setCreator] = useState(null);
   const [loading, setLoading] = useState(true);
   const [redeeming, setRedeeming] = useState(false);
   const [error, setError] = useState(null);
@@ -60,19 +62,81 @@ function InviteRedemptionPage({ inviteCode, onBack }) {
       }
 
       const response = await fetch(
-        `http://localhost:3001/api/events/${eventId}`,
-        { headers }
+        `http://localhost:3001/api/events/${eventId}/public`
       );
 
       const data = await response.json();
 
       if (data.success) {
         setEvent(data.data);
+        // If event has a venue, fetch venue details
+        if (data.data.venueId) {
+          await fetchVenueDetails(data.data.venueId);
+        }
+        // If event has a creator, fetch creator details
+        if (data.data.createdBy) {
+          await fetchCreatorDetails(data.data.createdBy);
+        }
       } else {
         console.warn('Failed to fetch event details:', data.message);
+        setError('Failed to load event details');
       }
     } catch (err) {
       console.warn('Error fetching event details:', err);
+      setError('Failed to load event details');
+    }
+  };
+
+  /**
+   * Fetch venue details
+   */
+  const fetchVenueDetails = async (venueId) => {
+    try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
+      const response = await fetch(
+        `http://localhost:3001/api/venues/${venueId}/public`
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setVenue(data.data);
+      } else {
+        console.warn('Failed to fetch venue details:', data.message);
+      }
+    } catch (err) {
+      console.warn('Error fetching venue details:', err);
+    }
+  };
+
+  /**
+   * Fetch creator details
+   */
+  const fetchCreatorDetails = async (creatorId) => {
+    try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
+      const response = await fetch(
+        `http://localhost:3001/api/auth/users/${creatorId}`,
+        { headers }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCreator(data.data);
+      } else {
+        console.warn('Failed to fetch creator details:', data.message);
+      }
+    } catch (err) {
+      console.warn('Error fetching creator details:', err);
     }
   };
 
@@ -244,8 +308,20 @@ function InviteRedemptionPage({ inviteCode, onBack }) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Event Header */}
+        {event && (
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              {event.eventName}
+            </h1>
+            <p className="text-xl text-gray-300">
+              You've been invited to join this event!
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Invitation Details */}
           <div className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4">
@@ -308,21 +384,55 @@ function InviteRedemptionPage({ inviteCode, onBack }) {
             </h2>
 
             {event ? (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-white">
-                    {event.eventName}
-                  </h3>
-                  {event.description && (
-                    <p className="text-gray-300 mt-2">{event.description}</p>
-                  )}
-                </div>
+              <div className="space-y-6">
+                {/* Event Description */}
+                {event.description && (
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                      <svg
+                        className="h-5 w-5 text-blue-400 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-400">
+                        Event Description
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-lg leading-relaxed">
+                      {event.description}
+                    </p>
+                  </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    Event Date
-                  </label>
-                  <div className="text-white">
+                {/* Event Date and Time */}
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <svg
+                      className="h-5 w-5 text-blue-400 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-400">
+                      Event Schedule
+                    </span>
+                  </div>
+                  <div className="text-white text-lg">
                     {event.eventDate
                       ? new Date(event.eventDate).toLocaleDateString('en-GB', {
                           weekday: 'long',
@@ -330,23 +440,133 @@ function InviteRedemptionPage({ inviteCode, onBack }) {
                           month: 'long',
                           day: 'numeric',
                         })
-                      : 'TBD'}
+                      : 'Date TBD'}
                   </div>
                 </div>
 
-                {event.venueId && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Venue
-                    </label>
+                {/* Venue Information */}
+                {venue ? (
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex items-center mb-3">
+                      <svg
+                        className="h-5 w-5 text-green-400 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-400">
+                        Venue
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">
+                        {venue.venueName}
+                      </h4>
+                      {venue.address && (
+                        <p className="text-gray-300 mb-2">{venue.address}</p>
+                      )}
+                      {venue.description && (
+                        <p className="text-gray-400 text-sm mb-2">
+                          {venue.description}
+                        </p>
+                      )}
+                      {venue.capacity && (
+                        <p className="text-sm text-gray-400">
+                          Capacity: {venue.capacity} people
+                        </p>
+                      )}
+                      {venue.contactPhone && (
+                        <p className="text-sm text-gray-400">
+                          Phone: {venue.contactPhone}
+                        </p>
+                      )}
+                      {venue.contactEmail && (
+                        <p className="text-sm text-gray-400">
+                          Email: {venue.contactEmail}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : event.venueId ? (
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                      <svg
+                        className="h-5 w-5 text-yellow-400 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-400">
+                        Venue
+                      </span>
+                    </div>
+                    <div className="text-yellow-300">
+                      Venue details will be available after joining
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Event Creator */}
+                {creator && (
+                  <div className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                      <svg
+                        className="h-5 w-5 text-purple-400 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-400">
+                        Event Organizer
+                      </span>
+                    </div>
                     <div className="text-white">
-                      Venue details will be shown after joining
+                      {creator.name || creator.email || 'Unknown Organizer'}
                     </div>
                   </div>
                 )}
+
+                {/* Event Status */}
+                <div className="bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                      <span className="text-sm font-medium text-gray-400">
+                        Event Status
+                      </span>
+                    </div>
+                    <span className="px-3 py-1 bg-green-900 text-green-300 rounded-full text-sm font-medium">
+                      Active
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="text-gray-400">Event details not available</div>
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <div className="text-gray-400">Loading event details...</div>
+              </div>
             )}
           </div>
         </div>

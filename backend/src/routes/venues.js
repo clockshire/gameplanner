@@ -101,6 +101,51 @@ router.get('/', authenticateUser, async (req, res) => {
 });
 
 /**
+ * GET /api/venues/:venueId/public
+ * Get a specific venue by ID (public access for invitation redemption)
+ */
+router.get('/:venueId/public', async (req, res) => {
+  try {
+    const { venueId } = req.params;
+
+    const result = await venueService.getVenue(venueId);
+
+    if (result.success) {
+      // Return only public venue information
+      const publicVenue = {
+        venueId: result.data.venueId,
+        venueName: result.data.venueName,
+        description: result.data.description,
+        address: result.data.address,
+        contactPhone: result.data.contactPhone,
+        contactEmail: result.data.contactEmail,
+        websiteURL: result.data.websiteURL,
+        capacity: result.data.capacity,
+        mapLink: result.data.mapLink,
+        createdBy: result.data.createdBy,
+        createdAt: result.data.createdAt,
+        updatedAt: result.data.updatedAt,
+      };
+
+      res.status(200).json({
+        success: true,
+        data: publicVenue,
+        message: 'Venue details retrieved',
+      });
+    } else {
+      res.status(404).json(result);
+    }
+  } catch (error) {
+    console.error('Get public venue error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: 'Failed to retrieve venue details',
+    });
+  }
+});
+
+/**
  * GET /api/venues/:venueId
  * Get a specific venue by ID (only if user owns it)
  */
