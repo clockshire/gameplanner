@@ -9,7 +9,14 @@ const { useState, useEffect } = React;
  * DeleteVenueModal component
  * Shows detailed confirmation with event validation and room cascading info
  */
-function DeleteVenueModal({ isOpen, onClose, venueId, venueName, onVenueDeleted }) {
+function DeleteVenueModal({
+  isOpen,
+  onClose,
+  venueId,
+  venueName,
+  onVenueDeleted,
+}) {
+  const { sessionToken } = useAuth();
   const [deletionInfo, setDeletionInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -25,8 +32,14 @@ function DeleteVenueModal({ isOpen, onClose, venueId, venueName, onVenueDeleted 
       setLoading(true);
       setError(null);
 
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/venues/${venueId}/deletion-info`
+        `http://localhost:3001/api/venues/${venueId}/deletion-info`,
+        { headers }
       );
       const data = await response.json();
 
@@ -53,10 +66,16 @@ function DeleteVenueModal({ isOpen, onClose, venueId, venueName, onVenueDeleted 
       setDeleting(true);
       setError(null);
 
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
         `http://localhost:3001/api/venues/${venueId}`,
         {
           method: 'DELETE',
+          headers,
         }
       );
 
@@ -97,7 +116,12 @@ function DeleteVenueModal({ isOpen, onClose, venueId, venueName, onVenueDeleted 
             className="text-gray-400 hover:text-white transition-colors"
             disabled={deleting}
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -179,7 +203,8 @@ function DeleteVenueModal({ isOpen, onClose, venueId, venueName, onVenueDeleted 
                     <h3 className="text-sm font-medium">Cannot Delete Venue</h3>
                     <div className="mt-2 text-sm">
                       <p className="mb-2">
-                        This venue cannot be deleted because it is referenced by the following event(s):
+                        This venue cannot be deleted because it is referenced by
+                        the following event(s):
                       </p>
                       <ul className="list-disc list-inside space-y-1">
                         {deletionInfo.events.map((event) => (
@@ -189,7 +214,8 @@ function DeleteVenueModal({ isOpen, onClose, venueId, venueName, onVenueDeleted 
                         ))}
                       </ul>
                       <p className="mt-2 text-xs">
-                        Please remove or reassign these events before deleting the venue.
+                        Please remove or reassign these events before deleting
+                        the venue.
                       </p>
                     </div>
                   </div>
@@ -198,70 +224,79 @@ function DeleteVenueModal({ isOpen, onClose, venueId, venueName, onVenueDeleted 
             )}
 
             {/* Room Cascading Info */}
-            {!deletionInfo.hasEventReferences && deletionInfo.rooms.length > 0 && (
-              <div className="bg-yellow-900 border border-yellow-700 text-yellow-100 px-4 py-3 rounded">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-yellow-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium">Warning: Associated Rooms Will Be Deleted</h3>
-                    <div className="mt-2 text-sm">
-                      <p className="mb-2">
-                        Deleting this venue will also permanently delete the following {deletionInfo.rooms.length} room(s):
-                      </p>
-                      <ul className="list-disc list-inside space-y-1">
-                        {deletionInfo.rooms.map((room) => (
-                          <li key={room.roomId} className="font-medium">
-                            {room.roomName} (Capacity: {room.capacity})
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="mt-2 text-xs">
-                        This action cannot be undone. All room data will be permanently lost.
-                      </p>
+            {!deletionInfo.hasEventReferences &&
+              deletionInfo.rooms.length > 0 && (
+                <div className="bg-yellow-900 border border-yellow-700 text-yellow-100 px-4 py-3 rounded">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="h-5 w-5 text-yellow-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium">
+                        Warning: Associated Rooms Will Be Deleted
+                      </h3>
+                      <div className="mt-2 text-sm">
+                        <p className="mb-2">
+                          Deleting this venue will also permanently delete the
+                          following {deletionInfo.rooms.length} room(s):
+                        </p>
+                        <ul className="list-disc list-inside space-y-1">
+                          {deletionInfo.rooms.map((room) => (
+                            <li key={room.roomId} className="font-medium">
+                              {room.roomName} (Capacity: {room.capacity})
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="mt-2 text-xs">
+                          This action cannot be undone. All room data will be
+                          permanently lost.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Safe to Delete */}
-            {!deletionInfo.hasEventReferences && deletionInfo.rooms.length === 0 && (
-              <div className="bg-green-900 border border-green-700 text-green-100 px-4 py-3 rounded">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-green-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium">Safe to Delete</h3>
-                    <div className="mt-2 text-sm">
-                      <p>This venue has no associated events or rooms and can be safely deleted.</p>
+            {!deletionInfo.hasEventReferences &&
+              deletionInfo.rooms.length === 0 && (
+                <div className="bg-green-900 border border-green-700 text-green-100 px-4 py-3 rounded">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="h-5 w-5 text-green-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium">Safe to Delete</h3>
+                      <div className="mt-2 text-sm">
+                        <p>
+                          This venue has no associated events or rooms and can
+                          be safely deleted.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Action Buttons */}
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">

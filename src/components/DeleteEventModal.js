@@ -10,6 +10,7 @@ const { useState } = React;
  * Provides a confirmation dialog for deleting events
  */
 function DeleteEventModal({ event, isOpen, onClose, onEventDeleted }) {
+  const { sessionToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,10 +27,16 @@ function DeleteEventModal({ event, isOpen, onClose, onEventDeleted }) {
     setError(null);
 
     try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
         `http://localhost:3001/api/events/${event.eventId}`,
         {
           method: 'DELETE',
+          headers,
         }
       );
 
