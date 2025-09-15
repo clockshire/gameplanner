@@ -10,6 +10,7 @@ const { useState } = React;
  * Handles venue creation with form validation
  */
 function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
+  const { sessionToken } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -57,11 +58,17 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
         mapLink: formData.mapLink || null,
       };
 
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch('http://localhost:3001/api/venues', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(venueData),
       });
 

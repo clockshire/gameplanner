@@ -26,9 +26,10 @@ class VenueService {
    * @param {string} venueData.websiteURL - Website URL
    * @param {number} venueData.capacity - Maximum capacity
    * @param {string} venueData.mapLink - Optional map link (e.g., Google Maps)
+   * @param {string} createdBy - User ID of the creator
    * @returns {Promise<Object>} Created venue
    */
-  async createVenue(venueData) {
+  async createVenue(venueData, createdBy) {
     try {
       const venueId = uuidv4();
       const now = new Date().toISOString();
@@ -45,6 +46,7 @@ class VenueService {
         websiteURL: venueData.websiteURL || null,
         capacity: venueData.capacity || 0,
         mapLink: venueData.mapLink || null,
+        createdBy: createdBy,
         createdAt: now,
         updatedAt: now,
         entityType: 'VENUE',
@@ -69,6 +71,44 @@ class VenueService {
         success: false,
         error: error.message,
         message: 'Failed to create venue',
+      };
+    }
+  }
+
+  /**
+   * Check if a user owns a venue
+   * @param {string} venueId - Venue ID
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} Ownership check result
+   */
+  async checkVenueOwnership(venueId, userId) {
+    try {
+      const venueResult = await this.getVenue(venueId);
+
+      if (!venueResult.success) {
+        return {
+          success: false,
+          ownsVenue: false,
+          error: venueResult.error,
+          message: venueResult.message,
+        };
+      }
+
+      const venue = venueResult.data;
+      const ownsVenue = venue.createdBy === userId;
+
+      return {
+        success: true,
+        ownsVenue: ownsVenue,
+        message: ownsVenue ? 'User owns venue' : 'User does not own venue',
+      };
+    } catch (error) {
+      console.error('Error checking venue ownership:', error);
+      return {
+        success: false,
+        ownsVenue: false,
+        error: error.message,
+        message: 'Failed to check venue ownership',
       };
     }
   }
@@ -114,16 +154,18 @@ class VenueService {
   }
 
   /**
-   * Get all venues
+   * Get all venues for a specific user
+   * @param {string} userId - User ID to filter venues by
    * @returns {Promise<Object>} List of venues
    */
-  async getAllVenues() {
+  async getAllVenues(userId) {
     try {
       const params = {
         TableName: this.tableName,
-        FilterExpression: 'entityType = :entityType',
+        FilterExpression: 'entityType = :entityType AND createdBy = :userId',
         ExpressionAttributeValues: {
           ':entityType': 'VENUE',
+          ':userId': userId,
         },
       };
 

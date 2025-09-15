@@ -10,6 +10,7 @@ const { useState, useEffect } = React;
  * Shows all venues with proper formatting and empty state
  */
 function VenuesPage({ onEditVenue, onVenueUpdated }) {
+  const { sessionToken, loading: authLoading, isAuthenticated } = useAuth();
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,7 +27,20 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('http://localhost:3001/api/venues');
+      // Don't fetch if not authenticated
+      if (!isAuthenticated || !sessionToken) {
+        setVenues([]);
+        setLoading(false);
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${sessionToken}`,
+      };
+
+      const response = await fetch('http://localhost:3001/api/venues', {
+        headers,
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -123,10 +137,12 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
     setVenueToDelete(null);
   };
 
-  // Fetch venues on component mount
+  // Fetch venues when authentication state changes
   useEffect(() => {
-    fetchVenues();
-  }, []);
+    if (!authLoading) {
+      fetchVenues();
+    }
+  }, [authLoading, isAuthenticated, sessionToken]);
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
@@ -152,9 +168,12 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
         </div>
 
         {/* Loading State */}
-        {loading && (
+        {(authLoading || loading) && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <span className="ml-3 text-gray-400">
+              {authLoading ? 'Loading...' : 'Loading venues...'}
+            </span>
           </div>
         )}
 
@@ -192,7 +211,7 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
         )}
 
         {/* Empty State */}
-        {!loading && !error && venues.length === 0 && (
+        {!authLoading && !loading && !error && venues.length === 0 && (
           <div className="text-center py-12">
             <div className="mx-auto h-24 w-24 text-gray-600 mb-4">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,7 +239,7 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
         )}
 
         {/* Venues List */}
-        {!loading && !error && venues.length > 0 && (
+        {!authLoading && !loading && !error && venues.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {venues.map((venue) => (
               <div
@@ -234,7 +253,9 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
                         {venue.venueName}
                       </h3>
                       <button
-                        onClick={() => handleDeleteVenue(venue.venueId, venue.venueName)}
+                        onClick={() =>
+                          handleDeleteVenue(venue.venueId, venue.venueName)
+                        }
                         className="text-red-400 hover:text-red-300 transition-colors"
                         title="Delete venue"
                       >
@@ -297,7 +318,9 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
                         </div>
                       )}
 
-                      {(venue.contactPhone || venue.contactEmail || venue.websiteURL) && (
+                      {(venue.contactPhone ||
+                        venue.contactEmail ||
+                        venue.websiteURL) && (
                         <div className="space-y-2">
                           {venue.contactPhone && (
                             <div className="flex items-start">

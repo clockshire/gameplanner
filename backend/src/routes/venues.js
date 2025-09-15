@@ -5,6 +5,7 @@
 
 const express = require('express');
 const VenueService = require('../venues');
+const { authenticateUser } = require('../middleware/auth');
 const router = express.Router();
 
 const venueService = new VenueService();
@@ -13,7 +14,7 @@ const venueService = new VenueService();
  * POST /api/venues
  * Create a new venue
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateUser, async (req, res) => {
   try {
     const {
       name,
@@ -43,16 +44,19 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const result = await venueService.createVenue({
-      name,
-      description,
-      address,
-      contactPhone,
-      contactEmail,
-      websiteURL,
-      capacity,
-      mapLink,
-    });
+    const result = await venueService.createVenue(
+      {
+        name,
+        description,
+        address,
+        contactPhone,
+        contactEmail,
+        websiteURL,
+        capacity,
+        mapLink,
+      },
+      req.user.userId
+    );
 
     if (result.success) {
       res.status(201).json(result);
@@ -71,11 +75,11 @@ router.post('/', async (req, res) => {
 
 /**
  * GET /api/venues
- * Get all venues
+ * Get all venues for the authenticated user
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticateUser, async (req, res) => {
   try {
-    const result = await venueService.getAllVenues();
+    const result = await venueService.getAllVenues(req.user.userId);
 
     if (result.success) {
       res.status(200).json(result);
@@ -94,11 +98,24 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /api/venues/:venueId
- * Get a specific venue by ID
+ * Get a specific venue by ID (only if user owns it)
  */
-router.get('/:venueId', async (req, res) => {
+router.get('/:venueId', authenticateUser, async (req, res) => {
   try {
     const { venueId } = req.params;
+
+    // Check if user owns this venue
+    const ownershipCheck = await venueService.checkVenueOwnership(
+      venueId,
+      req.user.userId
+    );
+    if (!ownershipCheck.success || !ownershipCheck.ownsVenue) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        message: 'You can only view venues you created',
+      });
+    }
 
     const result = await venueService.getVenue(venueId);
 
@@ -119,16 +136,30 @@ router.get('/:venueId', async (req, res) => {
 
 /**
  * PUT /api/venues/:venueId
- * Update a specific venue
+ * Update a specific venue (only if user owns it)
  */
-router.put('/:venueId', async (req, res) => {
+router.put('/:venueId', authenticateUser, async (req, res) => {
   try {
     const { venueId } = req.params;
     const updateData = req.body;
 
+    // Check if user owns this venue
+    const ownershipCheck = await venueService.checkVenueOwnership(
+      venueId,
+      req.user.userId
+    );
+    if (!ownershipCheck.success || !ownershipCheck.ownsVenue) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        message: 'You can only update venues you created',
+      });
+    }
+
     // Remove fields that shouldn't be updated
     delete updateData.venueId;
     delete updateData.createdAt;
+    delete updateData.createdBy;
 
     const result = await venueService.updateVenue(venueId, updateData);
 
@@ -198,12 +229,25 @@ router.get('/:venueId/deletion-info', async (req, res) => {
 
 /**
  * DELETE /api/venues/:venueId
- * Delete a specific venue with validation and cascading deletes
+ * Delete a specific venue with validation and cascading deletes (only if user owns it)
  */
-router.delete('/:venueId', async (req, res) => {
+router.delete('/:venueId', authenticateUser, async (req, res) => {
   try {
     const { venueId } = req.params;
     const { force } = req.query; // Optional force parameter
+
+    // Check if user owns this venue
+    const ownershipCheck = await venueService.checkVenueOwnership(
+      venueId,
+      req.user.userId
+    );
+    if (!ownershipCheck.success || !ownershipCheck.ownsVenue) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        message: 'You can only delete venues you created',
+      });
+    }
 
     const result = await venueService.deleteVenue(venueId, force === 'true');
 
