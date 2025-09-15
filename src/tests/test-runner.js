@@ -105,16 +105,64 @@ async function globalCleanup() {
   const API_BASE_URL = 'http://localhost:3001/api';
 
   try {
+    // Authenticate as cleanup user
+    let authHeaders = {};
+    try {
+      // First try to create the cleanup user if it doesn't exist
+      await fetch(`${API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'cleanup@test.com',
+          name: 'Cleanup User',
+          password: 'cleanup123',
+        }),
+      });
+
+      // Try to login as cleanup user
+      const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'cleanup@test.com',
+          password: 'cleanup123',
+        }),
+      });
+
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json();
+        if (loginData.success && loginData.data.sessionToken) {
+          authHeaders = {
+            Authorization: `Bearer ${loginData.data.sessionToken}`,
+          };
+        }
+      }
+    } catch (error) {
+      console.log(
+        '   ⚠️  Could not authenticate for cleanup, proceeding without auth'
+      );
+    }
+
     // Get all entities
-    const [eventsResponse, roomsResponse, venuesResponse] = await Promise.all([
-      fetch(`${API_BASE_URL}/events`),
-      fetch(`${API_BASE_URL}/rooms`),
-      fetch(`${API_BASE_URL}/venues`),
+    const [
+      eventsResponse,
+      roomsResponse,
+      venuesResponse,
+      invitationsResponse,
+      eventParticipantsResponse,
+    ] = await Promise.all([
+      fetch(`${API_BASE_URL}/events`, { headers: authHeaders }),
+      fetch(`${API_BASE_URL}/rooms`, { headers: authHeaders }),
+      fetch(`${API_BASE_URL}/venues`, { headers: authHeaders }),
+      fetch(`${API_BASE_URL}/invitations`),
+      fetch(`${API_BASE_URL}/event-participants`),
     ]);
 
     const events = await eventsResponse.json();
     const rooms = await roomsResponse.json();
     const venues = await venuesResponse.json();
+    const invitations = await invitationsResponse.json();
+    const eventParticipants = await eventParticipantsResponse.json();
 
     let cleanupCount = 0;
 
@@ -124,7 +172,7 @@ async function globalCleanup() {
         try {
           const response = await fetch(
             `${API_BASE_URL}/events/${event.eventId}`,
-            { method: 'DELETE' }
+            { method: 'DELETE', headers: authHeaders }
           );
           if (response.ok) {
             cleanupCount++;
@@ -149,6 +197,7 @@ async function globalCleanup() {
         try {
           const response = await fetch(`${API_BASE_URL}/rooms/${room.roomId}`, {
             method: 'DELETE',
+            headers: authHeaders,
           });
           if (response.ok) {
             cleanupCount++;
@@ -173,7 +222,7 @@ async function globalCleanup() {
         try {
           const response = await fetch(
             `${API_BASE_URL}/venues/${venue.venueId}`,
-            { method: 'DELETE' }
+            { method: 'DELETE', headers: authHeaders }
           );
           if (response.ok) {
             cleanupCount++;
@@ -185,6 +234,64 @@ async function globalCleanup() {
         } catch (error) {
           console.log(
             `   ⚠️  Failed to delete venue ${venue.venueId}: ${error.message}`
+          );
+        }
+        // Small delay to avoid overwhelming the server
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    // Delete all invitations
+    if (
+      invitations.success &&
+      invitations.data &&
+      invitations.data.length > 0
+    ) {
+      for (const invitation of invitations.data) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/invitations/${invitation.inviteCode}`,
+            { method: 'DELETE', headers: authHeaders }
+          );
+          if (response.ok) {
+            cleanupCount++;
+          } else {
+            console.log(
+              `   ⚠️  Failed to delete invitation ${invitation.inviteCode}: HTTP ${response.status}`
+            );
+          }
+        } catch (error) {
+          console.log(
+            `   ⚠️  Failed to delete invitation ${invitation.inviteCode}: ${error.message}`
+          );
+        }
+        // Small delay to avoid overwhelming the server
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    // Delete all event participants
+    if (
+      eventParticipants.success &&
+      eventParticipants.data &&
+      eventParticipants.data.length > 0
+    ) {
+      for (const participant of eventParticipants.data) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/event-participants/${participant.eventId}/${participant.userId}`,
+            { method: 'DELETE', headers: authHeaders }
+          );
+          if (response.ok) {
+            cleanupCount++;
+          } else {
+            console.log(
+              `   ⚠️  Failed to delete participant ${participant.userId} from event ${participant.eventId}: HTTP ${response.status}`
+            );
+          }
+        } catch (error) {
+          console.log(
+            `   ⚠️  Failed to delete participant ${participant.userId} from event ${participant.eventId}: ${error.message}`
           );
         }
         // Small delay to avoid overwhelming the server
@@ -213,6 +320,26 @@ async function runAllTests() {
   const serverRunning = await checkServer();
   if (!serverRunning) {
     process.exit(1);
+  }
+
+  // Check if this is a cleanup-only run
+  if (process.argv.includes('--cleanup-only')) {
+    console.log('🧹 Running cleanup only...');
+    const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+
+    try {
+      const { stdout, stderr } = await execAsync(
+        'cd backend && node scripts/cleanup-test-data.js'
+      );
+      console.log(stdout);
+      if (stderr) console.error(stderr);
+    } catch (error) {
+      console.error('Cleanup failed:', error.message);
+    }
+    console.log('✅ Cleanup completed');
+    return;
   }
 
   // Perform global cleanup before running tests

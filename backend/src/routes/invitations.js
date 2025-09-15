@@ -60,6 +60,29 @@ router.post('/', authenticateUser, async (req, res) => {
 });
 
 /**
+ * GET /api/invitations
+ * Get all invitations (for cleanup purposes)
+ */
+router.get('/', async (req, res) => {
+  try {
+    const result = await invitationService.getAllInvitations();
+
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Get all invitations error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: 'Failed to get invitations',
+    });
+  }
+});
+
+/**
  * GET /api/invitations/event/:eventId
  * Get all invitations for a specific event
  */
@@ -143,14 +166,19 @@ router.post('/:inviteCode/redeem', authenticateUser, async (req, res) => {
     const userEmail = req.user.email;
 
     // First redeem the invitation
-    const redeemResult = await invitationService.redeemInvitation(inviteCode, userId);
+    const redeemResult = await invitationService.redeemInvitation(
+      inviteCode,
+      userId
+    );
 
     if (!redeemResult.success) {
       return res.status(400).json(redeemResult);
     }
 
     // Get the event ID from the invitation
-    const invitationResult = await invitationService.getInvitationByCode(inviteCode);
+    const invitationResult = await invitationService.getInvitationByCode(
+      inviteCode
+    );
     if (!invitationResult.success) {
       return res.status(500).json({
         success: false,
@@ -170,10 +198,16 @@ router.post('/:inviteCode/redeem', authenticateUser, async (req, res) => {
       inviteCode
     );
 
-    if (!participantResult.success && participantResult.code !== 'ALREADY_PARTICIPANT') {
+    if (
+      !participantResult.success &&
+      participantResult.code !== 'ALREADY_PARTICIPANT'
+    ) {
       // If adding participant fails, we should still consider the invitation redeemed
       // but log the error
-      console.error('Failed to add participant after invitation redemption:', participantResult);
+      console.error(
+        'Failed to add participant after invitation redemption:',
+        participantResult
+      );
     }
 
     // Return success even if participant addition failed (invitation was still redeemed)
@@ -183,7 +217,9 @@ router.post('/:inviteCode/redeem', authenticateUser, async (req, res) => {
         eventId: eventId,
         inviteCode: inviteCode,
         type: invitationResult.data.type,
-        participantAdded: participantResult.success || participantResult.code === 'ALREADY_PARTICIPANT',
+        participantAdded:
+          participantResult.success ||
+          participantResult.code === 'ALREADY_PARTICIPANT',
       },
       message: 'Invitation redeemed successfully',
     });

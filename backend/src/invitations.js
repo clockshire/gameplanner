@@ -304,6 +304,33 @@ class InvitationService {
       };
     }
   }
+
+  /**
+   * Get all invitations (for cleanup purposes)
+   * @returns {Promise<Object>} All invitations
+   */
+  async getAllInvitations() {
+    try {
+      const params = {
+        TableName: this.tableName,
+      };
+
+      const result = await dynamodb.scan(params).promise();
+
+      return {
+        success: true,
+        data: result.Items || [],
+        message: 'Invitations retrieved successfully',
+      };
+    } catch (error) {
+      console.error('Error getting all invitations:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to get invitations',
+      };
+    }
+  }
 }
 
 module.exports = InvitationService;

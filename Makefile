@@ -54,3 +54,8 @@ update-events-createdby:
 	@echo "Example: make update-events-createdby USER_ID=a6f3aec2-7d19-48d5-85a4-7602da37e79f"
 	@if [ -z "$(USER_ID)" ]; then echo "❌ Please provide USER_ID"; exit 1; fi
 	@cd backend && node scripts/update-events-createdby.js $(USER_ID)
+
+# Clean up test data
+clean-test-data:
+	@echo "🧹 Cleaning up test data..."
+	@cd backend && node scripts/cleanup-test-data.js

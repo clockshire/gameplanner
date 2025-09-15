@@ -24,7 +24,13 @@ class EventParticipantsService {
    * @param {string} [inviteCode] - Optional invite code used
    * @returns {Promise<Object>} Result of adding participant
    */
-  async addParticipant(eventId, userId, userName, userEmail, inviteCode = null) {
+  async addParticipant(
+    eventId,
+    userId,
+    userName,
+    userEmail,
+    inviteCode = null
+  ) {
     try {
       const now = new Date().toISOString();
 
@@ -45,7 +51,8 @@ class EventParticipantsService {
       const params = {
         TableName: this.tableName,
         Item: participant,
-        ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)', // Prevent duplicates
+        ConditionExpression:
+          'attribute_not_exists(PK) AND attribute_not_exists(SK)', // Prevent duplicates
       };
 
       await dynamodb.put(params).promise();
@@ -193,7 +200,9 @@ class EventParticipantsService {
         success: true,
         isParticipant: !!result.Item,
         data: result.Item || null,
-        message: result.Item ? 'User is a participant' : 'User is not a participant',
+        message: result.Item
+          ? 'User is a participant'
+          : 'User is not a participant',
       };
     } catch (error) {
       console.error('Error checking participant status:', error);
@@ -235,6 +244,33 @@ class EventParticipantsService {
         success: false,
         error: error.message,
         message: 'Failed to retrieve participant count',
+      };
+    }
+  }
+
+  /**
+   * Get all event participants (for cleanup purposes)
+   * @returns {Promise<Object>} All event participants
+   */
+  async getAllEventParticipants() {
+    try {
+      const params = {
+        TableName: this.tableName,
+      };
+
+      const result = await dynamodb.scan(params).promise();
+
+      return {
+        success: true,
+        data: result.Items || [],
+        message: 'Event participants retrieved successfully',
+      };
+    } catch (error) {
+      console.error('Error getting all event participants:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to get event participants',
       };
     }
   }

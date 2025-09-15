@@ -79,7 +79,10 @@ router.delete('/:eventId/:userId', authenticateUser, async (req, res) => {
       });
     }
 
-    const result = await eventParticipantsService.removeParticipant(eventId, userId);
+    const result = await eventParticipantsService.removeParticipant(
+      eventId,
+      userId
+    );
 
     if (result.success) {
       res.status(200).json(result);
@@ -92,6 +95,29 @@ router.delete('/:eventId/:userId', authenticateUser, async (req, res) => {
       success: false,
       error: 'Internal server error',
       message: 'Failed to remove participant',
+    });
+  }
+});
+
+/**
+ * GET /api/event-participants
+ * Get all event participants (for cleanup purposes)
+ */
+router.get('/', async (req, res) => {
+  try {
+    const result = await eventParticipantsService.getAllEventParticipants();
+
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Get all event participants error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: 'Failed to get event participants',
     });
   }
 });
@@ -167,7 +193,10 @@ router.get('/check/:eventId/:userId', authenticateUser, async (req, res) => {
   try {
     const { eventId, userId } = req.params;
 
-    const result = await eventParticipantsService.isParticipant(eventId, userId);
+    const result = await eventParticipantsService.isParticipant(
+      eventId,
+      userId
+    );
 
     if (result.success) {
       res.status(200).json(result);

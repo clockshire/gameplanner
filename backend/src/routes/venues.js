@@ -339,6 +339,59 @@ router.delete('/:venueId', authenticateUser, async (req, res) => {
 });
 
 /**
+ * DELETE /api/venues/admin/cleanup
+ * Admin endpoint to delete all venues (for cleanup purposes)
+ */
+router.delete('/admin/cleanup', async (req, res) => {
+  try {
+    // Get all venues
+    const venuesResult = await venueService.getAllVenuesForCleanup();
+
+    if (!venuesResult.success) {
+      return res.status(500).json(venuesResult);
+    }
+
+    let deletedCount = 0;
+    const errors = [];
+
+    // Delete each venue
+    for (const venue of venuesResult.data) {
+      try {
+        const deleteResult = await venueService.deleteVenue(
+          venue.venueId,
+          true
+        ); // Force delete
+        if (deleteResult.success) {
+          deletedCount++;
+        } else {
+          errors.push(
+            `Failed to delete venue ${venue.venueId}: ${deleteResult.error}`
+          );
+        }
+      } catch (error) {
+        errors.push(
+          `Failed to delete venue ${venue.venueId}: ${error.message}`
+        );
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Cleanup completed. Deleted ${deletedCount} venues.`,
+      deletedCount,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    console.error('Admin venue cleanup error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: 'Failed to cleanup venues',
+    });
+  }
+});
+
+/**
  * GET /api/venues/:venueId/rooms
  * Get all rooms for a specific venue
  */
