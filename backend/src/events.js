@@ -383,6 +383,126 @@ class EventService {
       };
     }
   }
+
+  /**
+   * Get all events for a user (both created and participated)
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} List of events with participation info
+   */
+  async getAllUserEvents(userId) {
+    try {
+      // Get events created by the user
+      const createdEventsResult = await this.getAllEvents(userId);
+      if (!createdEventsResult.success) {
+        return createdEventsResult;
+      }
+
+      // Get events where user is a participant
+      const participatedEventsResult = await this.getParticipatedEvents(userId);
+      if (!participatedEventsResult.success) {
+        return participatedEventsResult;
+      }
+
+      // Combine and deduplicate events
+      const createdEvents = createdEventsResult.data || [];
+      const participatedEvents = participatedEventsResult.data || [];
+
+      // Mark created events
+      const markedCreatedEvents = createdEvents.map((event) => ({
+        ...event,
+        userRole: 'owner',
+        isOwner: true,
+        isParticipant: false,
+      }));
+
+      // Mark participated events (excluding those already created by user)
+      const createdEventIds = new Set(
+        createdEvents.map((event) => event.eventId)
+      );
+      const markedParticipatedEvents = participatedEvents
+        .filter((event) => !createdEventIds.has(event.eventId))
+        .map((event) => ({
+          ...event,
+          userRole: 'participant',
+          isOwner: false,
+          isParticipant: true,
+        }));
+
+      // Combine all events
+      const allEvents = [...markedCreatedEvents, ...markedParticipatedEvents];
+
+      // Sort by date
+      const sortedEvents = allEvents.sort((a, b) => {
+        return new Date(a.eventDate) - new Date(b.eventDate);
+      });
+
+      return {
+        success: true,
+        data: sortedEvents,
+        message: 'User events retrieved successfully',
+      };
+    } catch (error) {
+      console.error('Error getting all user events:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to get user events',
+      };
+    }
+  }
+
+  /**
+   * Get events where user is a participant
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} List of participated events
+   */
+  async getParticipatedEvents(userId) {
+    try {
+      // First get all event participants for this user
+      const EventParticipantsService = require('./eventParticipants');
+      const eventParticipantsService = new EventParticipantsService();
+
+      const participantsResult = await eventParticipantsService.getUserEvents(
+        userId
+      );
+      if (!participantsResult.success) {
+        return participantsResult;
+      }
+
+      const participants = participantsResult.data || [];
+      if (participants.length === 0) {
+        return {
+          success: true,
+          data: [],
+          message: 'No participated events found',
+        };
+      }
+
+      // Get event details for each participated event
+      const eventIds = participants.map((p) => p.eventId);
+      const events = [];
+
+      for (const eventId of eventIds) {
+        const eventResult = await this.getEvent(eventId);
+        if (eventResult.success && eventResult.data) {
+          events.push(eventResult.data);
+        }
+      }
+
+      return {
+        success: true,
+        data: events,
+        message: 'Participated events retrieved successfully',
+      };
+    } catch (error) {
+      console.error('Error getting participated events:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to get participated events',
+      };
+    }
+  }
 }
 
 module.exports = EventService;

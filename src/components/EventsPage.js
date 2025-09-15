@@ -296,13 +296,17 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                             >
                               {event.status}
                             </span>
-                            {/* Your Event label - only show if current user created this event */}
-                            {currentUser &&
-                              event.createdBy === currentUser.userId && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
-                                  Your Event
-                                </span>
-                              )}
+                            {/* User role label */}
+                            {event.isOwner && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
+                                Your Event
+                              </span>
+                            )}
+                            {event.isParticipant && !event.isOwner && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-600 text-white border border-blue-700">
+                                Participating
+                              </span>
+                            )}
                           </div>
 
                           {event.description && (
@@ -436,13 +440,17 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                               >
                                 {event.status}
                               </span>
-                              {/* Your Event label - only show if current user created this event */}
-                              {currentUser &&
-                                event.createdBy === currentUser.userId && (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
-                                    Your Event
-                                  </span>
-                                )}
+                              {/* User role label */}
+                              {event.isOwner && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
+                                  Your Event
+                                </span>
+                              )}
+                              {event.isParticipant && !event.isOwner && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-600 text-white border border-blue-700">
+                                  Participating
+                                </span>
+                              )}
                             </div>
 
                             {event.description && (

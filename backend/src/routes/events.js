@@ -6,7 +6,10 @@
 const express = require('express');
 const EventService = require('../events');
 const { authenticateUser } = require('../middleware/auth');
-const { checkEventAccessMiddleware, requireEventOwnership } = require('../middleware/eventAccess');
+const {
+  checkEventAccessMiddleware,
+  requireEventOwnership,
+} = require('../middleware/eventAccess');
 const router = express.Router();
 
 const eventService = new EventService();
@@ -86,11 +89,11 @@ router.post('/', authenticateUser, async (req, res) => {
 
 /**
  * GET /api/events
- * Get all events for the authenticated user
+ * Get all events for the authenticated user (both created and participated)
  */
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const result = await eventService.getAllEvents(req.user.userId);
+    const result = await eventService.getAllUserEvents(req.user.userId);
 
     if (result.success) {
       res.status(200).json(result);
@@ -157,127 +160,142 @@ router.get('/:eventId/public', async (req, res) => {
  * GET /api/events/:eventId
  * Get a specific event by ID (if user owns it or is a participant)
  */
-router.get('/:eventId', authenticateUser, checkEventAccessMiddleware, async (req, res) => {
-  try {
-    const { eventId } = req.params;
+router.get(
+  '/:eventId',
+  authenticateUser,
+  checkEventAccessMiddleware,
+  async (req, res) => {
+    try {
+      const { eventId } = req.params;
 
-    const result = await eventService.getEvent(eventId);
+      const result = await eventService.getEvent(eventId);
 
-    if (result.success) {
-      // Add access level information to the response
-      const responseData = {
-        ...result.data,
-        userAccess: {
-          level: req.eventAccess.level,
-          isOwner: req.eventAccess.isOwner,
-          isParticipant: req.eventAccess.isParticipant,
-        },
-      };
+      if (result.success) {
+        // Add access level information to the response
+        const responseData = {
+          ...result.data,
+          userAccess: {
+            level: req.eventAccess.level,
+            isOwner: req.eventAccess.isOwner,
+            isParticipant: req.eventAccess.isParticipant,
+          },
+        };
 
-      res.status(200).json({
-        success: true,
-        data: responseData,
-        message: 'Event details retrieved',
+        res.status(200).json({
+          success: true,
+          data: responseData,
+          message: 'Event details retrieved',
+        });
+      } else {
+        res.status(404).json(result);
+      }
+    } catch (error) {
+      console.error('Get event error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: 'Failed to get event',
       });
-    } else {
-      res.status(404).json(result);
     }
-  } catch (error) {
-    console.error('Get event error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: 'Failed to get event',
-    });
   }
-});
+);
 
 /**
  * PUT /api/events/:eventId
  * Update a specific event (only if user owns it)
  */
-router.put('/:eventId', authenticateUser, requireEventOwnership, async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    const {
-      eventName,
-      description,
-      eventDate,
-      endDate,
-      startTime,
-      endTime,
-      venueId,
-      maxParticipants,
-      status,
-      assignedRoomIds,
-    } = req.body;
+router.put(
+  '/:eventId',
+  authenticateUser,
+  requireEventOwnership,
+  async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const {
+        eventName,
+        description,
+        eventDate,
+        endDate,
+        startTime,
+        endTime,
+        venueId,
+        maxParticipants,
+        status,
+        assignedRoomIds,
+      } = req.body;
 
-    // Ownership check is handled by requireEventOwnership middleware
+      // Ownership check is handled by requireEventOwnership middleware
 
-    // Map frontend field names to backend field names
-    const updateData = {
-      name: eventName,
-      description,
-      eventDate,
-      endDate,
-      startTime,
-      endTime,
-      venueId,
-      maxParticipants,
-      status,
-      assignedRoomIds,
-    };
+      // Map frontend field names to backend field names
+      const updateData = {
+        name: eventName,
+        description,
+        eventDate,
+        endDate,
+        startTime,
+        endTime,
+        venueId,
+        maxParticipants,
+        status,
+        assignedRoomIds,
+      };
 
-    // Remove undefined/null values
-    Object.keys(updateData).forEach((key) => {
-      if (updateData[key] === undefined || updateData[key] === null) {
-        delete updateData[key];
+      // Remove undefined/null values
+      Object.keys(updateData).forEach((key) => {
+        if (updateData[key] === undefined || updateData[key] === null) {
+          delete updateData[key];
+        }
+      });
+
+      const result = await eventService.updateEvent(eventId, updateData);
+
+      if (result.success) {
+        res.status(200).json(result);
+      } else {
+        res.status(400).json(result);
       }
-    });
-
-    const result = await eventService.updateEvent(eventId, updateData);
-
-    if (result.success) {
-      res.status(200).json(result);
-    } else {
-      res.status(400).json(result);
+    } catch (error) {
+      console.error('Update event error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: 'Failed to update event',
+      });
     }
-  } catch (error) {
-    console.error('Update event error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: 'Failed to update event',
-    });
   }
-});
+);
 
 /**
  * DELETE /api/events/:eventId
  * Delete a specific event (only if user owns it)
  */
-router.delete('/:eventId', authenticateUser, requireEventOwnership, async (req, res) => {
-  try {
-    const { eventId } = req.params;
+router.delete(
+  '/:eventId',
+  authenticateUser,
+  requireEventOwnership,
+  async (req, res) => {
+    try {
+      const { eventId } = req.params;
 
-    // Ownership check is handled by requireEventOwnership middleware
+      // Ownership check is handled by requireEventOwnership middleware
 
-    const result = await eventService.deleteEvent(eventId);
+      const result = await eventService.deleteEvent(eventId);
 
-    if (result.success) {
-      res.status(200).json(result);
-    } else {
-      res.status(400).json(result);
+      if (result.success) {
+        res.status(200).json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (error) {
+      console.error('Delete event error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: 'Failed to delete event',
+      });
     }
-  } catch (error) {
-    console.error('Delete event error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: 'Failed to delete event',
-    });
   }
-});
+);
 
 /**
  * GET /api/events/date-range
