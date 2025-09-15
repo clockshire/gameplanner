@@ -75,10 +75,6 @@ function EventDetailsPage({
 
       if (data.success) {
         setEvent(data.data);
-        // If event has a venue, fetch venue details
-        if (data.data.venueId) {
-          await fetchVenueDetails(data.data.venueId);
-        }
         // If event has a creator, fetch creator details
         if (data.data.createdBy) {
           await fetchCreatorDetails(data.data.createdBy);
@@ -107,10 +103,14 @@ function EventDetailsPage({
         headers.Authorization = `Bearer ${sessionToken}`;
       }
 
-      const response = await fetch(
-        `http://localhost:3001/api/venues/${venueId}`,
-        { headers }
-      );
+      // Use public endpoint for participants, authenticated endpoint for owners
+      const isOwner =
+        event && currentUser && event.createdBy === currentUser.userId;
+      const endpoint = isOwner
+        ? `http://localhost:3001/api/venues/${venueId}`
+        : `http://localhost:3001/api/venues/${venueId}/public`;
+
+      const response = await fetch(endpoint, { headers });
       const data = await response.json();
 
       if (data.success) {
@@ -369,6 +369,13 @@ function EventDetailsPage({
       fetchEventDetails();
     }
   }, [eventId, sessionToken]);
+
+  // Fetch venue details when event is loaded
+  useEffect(() => {
+    if (event && event.venueId) {
+      fetchVenueDetails(event.venueId);
+    }
+  }, [event, currentUser, sessionToken]);
 
   // Fetch invitations when event is loaded and user is the owner
   useEffect(() => {
