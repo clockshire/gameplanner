@@ -5,3 +5,4 @@ black
 python-dateutil
 types-python-dateutil
 boto3
+types-boto3
