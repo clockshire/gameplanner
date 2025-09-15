@@ -17,6 +17,7 @@ function EventDetailsPage({
   onDeleteEvent,
   onManageRooms,
 }) {
+  const { sessionToken } = useAuth();
   const [event, setEvent] = useState(null);
   const [venue, setVenue] = useState(null);
   const [creator, setCreator] = useState(null);
@@ -33,8 +34,14 @@ function EventDetailsPage({
       setLoading(true);
       setError(null);
 
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/events/${eventId}`
+        `http://localhost:3001/api/events/${eventId}`,
+        { headers }
       );
       const data = await response.json();
 
@@ -67,8 +74,14 @@ function EventDetailsPage({
    */
   const fetchVenueDetails = async (venueId) => {
     try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/venues/${venueId}`
+        `http://localhost:3001/api/venues/${venueId}`,
+        { headers }
       );
       const data = await response.json();
 
@@ -90,8 +103,14 @@ function EventDetailsPage({
    */
   const fetchVenueRooms = async (venueId) => {
     try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/rooms/venue/${venueId}`
+        `http://localhost:3001/api/rooms/venue/${venueId}`,
+        { headers }
       );
       const data = await response.json();
 
@@ -113,8 +132,14 @@ function EventDetailsPage({
    */
   const fetchCreatorDetails = async (creatorId) => {
     try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/auth/users/${creatorId}`
+        `http://localhost:3001/api/auth/users/${creatorId}`,
+        { headers }
       );
       const data = await response.json();
 
@@ -134,8 +159,14 @@ function EventDetailsPage({
    */
   const fetchEventRooms = async (eventId) => {
     try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/events/${eventId}/rooms`
+        `http://localhost:3001/api/events/${eventId}/rooms`,
+        { headers }
       );
       const data = await response.json();
 
@@ -306,10 +337,10 @@ function EventDetailsPage({
 
   // Fetch event details on component mount
   useEffect(() => {
-    if (eventId) {
+    if (eventId && sessionToken) {
       fetchEventDetails();
     }
-  }, [eventId]);
+  }, [eventId, sessionToken]);
 
   if (loading) {
     return (

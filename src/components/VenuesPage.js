@@ -67,8 +67,14 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
 
     for (const venue of venues) {
       try {
+        const headers = {};
+        if (sessionToken) {
+          headers.Authorization = `Bearer ${sessionToken}`;
+        }
+
         const response = await fetch(
-          `http://localhost:3001/api/rooms/venue/${venue.venueId}`
+          `http://localhost:3001/api/rooms/venue/${venue.venueId}`,
+          { headers }
         );
         const data = await response.json();
 

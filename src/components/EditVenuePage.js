@@ -10,6 +10,7 @@ const { useState, useEffect } = React;
  * Handles venue editing with form validation
  */
 function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
+  const { sessionToken } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -35,8 +36,14 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
       setInitialLoading(true);
       setError(null);
 
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/venues/${venueId}`
+        `http://localhost:3001/api/venues/${venueId}`,
+        { headers }
       );
       const data = await response.json();
 
@@ -69,8 +76,15 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
   const fetchRooms = async () => {
     try {
       setRoomsLoading(true);
+
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/rooms/venue/${venueId}`
+        `http://localhost:3001/api/rooms/venue/${venueId}`,
+        { headers }
       );
       const data = await response.json();
 
@@ -155,13 +169,18 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
         mapLink: formData.mapLink || null,
       };
 
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
         `http://localhost:3001/api/venues/${venueId}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify(venueData),
         }
       );
