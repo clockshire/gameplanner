@@ -5,6 +5,7 @@
 
 const express = require('express');
 const EventService = require('../events');
+const { authenticateUser } = require('../middleware/auth');
 const router = express.Router();
 
 const eventService = new EventService();
@@ -13,7 +14,7 @@ const eventService = new EventService();
  * POST /api/events
  * Create a new event
  */
-router.post('/', async (req, res) => {
+router.post('/', authenticateUser, async (req, res) => {
   try {
     const {
       name,
@@ -52,14 +53,6 @@ router.post('/', async (req, res) => {
       });
     }
 
-    if (!createdBy) {
-      return res.status(400).json({
-        success: false,
-        error: 'Created by user ID is required',
-        message: 'Created by user ID is required',
-      });
-    }
-
     const result = await eventService.createEvent({
       name,
       description,
@@ -69,7 +62,7 @@ router.post('/', async (req, res) => {
       endTime,
       venueId,
       maxParticipants,
-      createdBy,
+      createdBy: req.user.userId,
     });
 
     if (result.success) {
@@ -89,11 +82,11 @@ router.post('/', async (req, res) => {
 
 /**
  * GET /api/events
- * Get all events
+ * Get all events for the authenticated user
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticateUser, async (req, res) => {
   try {
-    const result = await eventService.getAllEvents();
+    const result = await eventService.getAllEvents(req.user.userId);
 
     if (result.success) {
       res.status(200).json(result);
@@ -112,11 +105,24 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /api/events/:eventId
- * Get a specific event by ID
+ * Get a specific event by ID (only if user owns it)
  */
-router.get('/:eventId', async (req, res) => {
+router.get('/:eventId', authenticateUser, async (req, res) => {
   try {
     const { eventId } = req.params;
+
+    // Check if user owns this event
+    const ownershipCheck = await eventService.checkEventOwnership(
+      eventId,
+      req.user.userId
+    );
+    if (!ownershipCheck.success || !ownershipCheck.ownsEvent) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        message: 'You can only view events you created',
+      });
+    }
 
     const result = await eventService.getEvent(eventId);
 
@@ -137,9 +143,9 @@ router.get('/:eventId', async (req, res) => {
 
 /**
  * PUT /api/events/:eventId
- * Update a specific event
+ * Update a specific event (only if user owns it)
  */
-router.put('/:eventId', async (req, res) => {
+router.put('/:eventId', authenticateUser, async (req, res) => {
   try {
     const { eventId } = req.params;
     const {
@@ -152,9 +158,21 @@ router.put('/:eventId', async (req, res) => {
       venueId,
       maxParticipants,
       status,
-      createdBy,
       assignedRoomIds,
     } = req.body;
+
+    // Check if user owns this event
+    const ownershipCheck = await eventService.checkEventOwnership(
+      eventId,
+      req.user.userId
+    );
+    if (!ownershipCheck.success || !ownershipCheck.ownsEvent) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        message: 'You can only update events you created',
+      });
+    }
 
     // Map frontend field names to backend field names
     const updateData = {
@@ -167,7 +185,6 @@ router.put('/:eventId', async (req, res) => {
       venueId,
       maxParticipants,
       status,
-      createdBy,
       assignedRoomIds,
     };
 
@@ -197,11 +214,24 @@ router.put('/:eventId', async (req, res) => {
 
 /**
  * DELETE /api/events/:eventId
- * Delete a specific event
+ * Delete a specific event (only if user owns it)
  */
-router.delete('/:eventId', async (req, res) => {
+router.delete('/:eventId', authenticateUser, async (req, res) => {
   try {
     const { eventId } = req.params;
+
+    // Check if user owns this event
+    const ownershipCheck = await eventService.checkEventOwnership(
+      eventId,
+      req.user.userId
+    );
+    if (!ownershipCheck.success || !ownershipCheck.ownsEvent) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        message: 'You can only delete events you created',
+      });
+    }
 
     const result = await eventService.deleteEvent(eventId);
 

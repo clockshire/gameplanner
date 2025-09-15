@@ -78,6 +78,44 @@ class EventService {
   }
 
   /**
+   * Check if a user owns an event
+   * @param {string} eventId - Event ID
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} Ownership check result
+   */
+  async checkEventOwnership(eventId, userId) {
+    try {
+      const eventResult = await this.getEvent(eventId);
+
+      if (!eventResult.success) {
+        return {
+          success: false,
+          ownsEvent: false,
+          error: eventResult.error,
+          message: eventResult.message,
+        };
+      }
+
+      const event = eventResult.data;
+      const ownsEvent = event.createdBy === userId;
+
+      return {
+        success: true,
+        ownsEvent: ownsEvent,
+        message: ownsEvent ? 'User owns event' : 'User does not own event',
+      };
+    } catch (error) {
+      console.error('Error checking event ownership:', error);
+      return {
+        success: false,
+        ownsEvent: false,
+        error: error.message,
+        message: 'Failed to check event ownership',
+      };
+    }
+  }
+
+  /**
    * Get an event by ID
    * @param {string} eventId - Event ID
    * @returns {Promise<Object>} Event data
@@ -118,16 +156,18 @@ class EventService {
   }
 
   /**
-   * Get all events
+   * Get all events for a specific user
+   * @param {string} userId - User ID to filter events by
    * @returns {Promise<Object>} List of events
    */
-  async getAllEvents() {
+  async getAllEvents(userId) {
     try {
       const params = {
         TableName: this.tableName,
-        FilterExpression: 'entityType = :entityType',
+        FilterExpression: 'entityType = :entityType AND createdBy = :userId',
         ExpressionAttributeValues: {
           ':entityType': 'EVENT',
+          ':userId': userId,
         },
       };
 

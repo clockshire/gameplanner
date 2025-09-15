@@ -10,6 +10,7 @@ const { useState, useEffect } = React;
  * Handles event creation with form validation
  */
 function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
+  const { sessionToken } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -29,7 +30,14 @@ function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
    */
   const fetchVenues = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/venues');
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
+      const response = await fetch('http://localhost:3001/api/venues', {
+        headers,
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -77,11 +85,17 @@ function CreateEventModal({ isOpen, onClose, onEventCreated, currentUser }) {
         createdBy: currentUser?.userId, // Add current user ID
       };
 
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch('http://localhost:3001/api/events', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(eventData),
       });
 

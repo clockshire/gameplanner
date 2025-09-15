@@ -10,6 +10,7 @@ const { useState, useEffect } = React;
  * Shows all events with proper formatting and empty state
  */
 function EventsPage({ onViewEventDetails, currentUser }) {
+  const { sessionToken, loading: authLoading, isAuthenticated } = useAuth();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,7 +24,20 @@ function EventsPage({ onViewEventDetails, currentUser }) {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('http://localhost:3001/api/events');
+      // Don't fetch if not authenticated
+      if (!isAuthenticated || !sessionToken) {
+        setEvents([]);
+        setLoading(false);
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${sessionToken}`,
+      };
+
+      const response = await fetch('http://localhost:3001/api/events', {
+        headers,
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -143,10 +157,12 @@ function EventsPage({ onViewEventDetails, currentUser }) {
     }
   };
 
-  // Fetch events on component mount
+  // Fetch events when authentication state changes
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (!authLoading) {
+      fetchEvents();
+    }
+  }, [authLoading, isAuthenticated, sessionToken]);
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
@@ -174,9 +190,12 @@ function EventsPage({ onViewEventDetails, currentUser }) {
         </div>
 
         {/* Loading State */}
-        {loading && (
+        {(authLoading || loading) && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <span className="ml-3 text-gray-400">
+              {authLoading ? 'Loading...' : 'Loading events...'}
+            </span>
           </div>
         )}
 
@@ -214,7 +233,7 @@ function EventsPage({ onViewEventDetails, currentUser }) {
         )}
 
         {/* Empty State */}
-        {!loading && !error && events.length === 0 && (
+        {!authLoading && !loading && !error && events.length === 0 && (
           <div className="text-center py-12">
             <div className="mx-auto h-24 w-24 text-gray-600 mb-4">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +270,7 @@ function EventsPage({ onViewEventDetails, currentUser }) {
         )}
 
         {/* Events List */}
-        {!loading && !error && events.length > 0 && (
+        {!authLoading && !loading && !error && events.length > 0 && (
           <div>
             {/* Active Events */}
             {events.filter((event) => event.status !== 'completed').length >
