@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Venue Listing Script
+Venue and Event Listing Script
 
-This script lists all venues in the database along with information about who created each one.
+This script lists all venues and events in the database along with information about who created each one.
 It connects directly to DynamoDB to access the raw data including the createdBy field.
 """
 
@@ -13,14 +13,15 @@ from typing import Dict, List, Optional, Tuple
 from botocore.exceptions import ClientError, NoCredentialsError
 
 
-class VenueLister:
-    """Handles listing venues and their creators from DynamoDB."""
+class DataLister:
+    """Handles listing venues, events and their creators from DynamoDB."""
 
     def __init__(self, endpoint_url: str = "http://localhost:8000"):
-        """Initialize the VenueLister with DynamoDB configuration."""
+        """Initialize the DataLister with DynamoDB configuration."""
         self.endpoint_url = endpoint_url
         self.region = "us-east-1"
         self.venues_table = "venues"
+        self.events_table = "events"
         self.users_table = "users"
 
         # Configure DynamoDB client for local development
@@ -80,6 +81,37 @@ class VenueLister:
             return []
         except Exception as e:
             print(f"❌ Unexpected error fetching venues: {e}")
+            return []
+
+    def get_all_events(self) -> List[Dict]:
+        """Fetch all events from the events table."""
+        try:
+            table = self.dynamodb.Table(self.events_table)
+
+            # Scan for all events
+            response = table.scan(
+                FilterExpression="entityType = :entityType",
+                ExpressionAttributeValues={":entityType": "EVENT"},
+            )
+
+            events = response.get("Items", [])
+
+            # Handle pagination if there are more items
+            while "LastEvaluatedKey" in response:
+                response = table.scan(
+                    FilterExpression="entityType = :entityType",
+                    ExpressionAttributeValues={":entityType": "EVENT"},
+                    ExclusiveStartKey=response["LastEvaluatedKey"],
+                )
+                events.extend(response.get("Items", []))
+
+            return events
+
+        except ClientError as e:
+            print(f"❌ Error fetching events: {e}")
+            return []
+        except Exception as e:
+            print(f"❌ Unexpected error fetching events: {e}")
             return []
 
     def get_user_by_id(self, user_id: str) -> Optional[Dict]:
@@ -256,14 +288,124 @@ class VenueLister:
         else:
             print("✅ All venues have creator information")
 
+    def list_events_with_creators(self) -> None:
+        """List all events with their creator information."""
+        print("🎉 Event Listing Report")
+        print("=" * 80)
+
+        # Test connection first
+        if not self.test_connection():
+            print(
+                "❌ Cannot connect to DynamoDB. Please ensure DynamoDB Local is running."
+            )
+            return
+
+        # Get all events
+        print("\n📋 Fetching events...")
+        events = self.get_all_events()
+
+        if not events:
+            print("ℹ️  No events found in the database.")
+            return
+
+        # Get all users for lookup
+        print("👥 Fetching user information...")
+        users = self.get_all_users()
+
+        print(f"\n📊 Found {len(events)} events:")
+        print("-" * 80)
+
+        # Sort events by creation date (newest first)
+        events.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
+
+        for i, event in enumerate(events, 1):
+            event_name = event.get("eventName", "Unknown Event")
+            event_id = event.get("eventId", "Unknown ID")
+            created_by = event.get("createdBy", "Unknown")
+            created_at = self.format_date(event.get("createdAt", ""))
+            event_date = self.format_date(event.get("eventDate", ""))
+            venue_id = event.get("venueId", "No venue")
+            description = event.get("description", "No description")
+
+            # Get creator information
+            creator_info = "Unknown Creator"
+            if created_by in users:
+                user = users[created_by]
+                user_name = user.get("name", "Unknown Name")
+                user_email = user.get("email", "Unknown Email")
+                creator_info = f"{user_name} ({user_email})"
+            elif created_by != "Unknown":
+                creator_info = f"User ID: {created_by} (not found in users table)"
+
+            print(f"\n{i}. {event_name}")
+            print(f"   ID: {event_id}")
+            print(f"   Event Date: {event_date}")
+            print(f"   Venue ID: {venue_id}")
+            print(f"   Created: {created_at}")
+            print(f"   Creator: {creator_info}")
+
+            # Show additional details if available
+            if description and description != "No description":
+                desc = description[:100]
+                if len(description) > 100:
+                    desc += "..."
+                print(f"   Description: {desc}")
+
+            if event.get("maxParticipants"):
+                print(f"   Max Participants: {event['maxParticipants']}")
+
+            if event.get("status"):
+                print(f"   Status: {event['status']}")
+
+        print("\n" + "=" * 80)
+        print(f"📊 Summary: {len(events)} events found")
+
+        # Show creator statistics
+        creator_counts: Dict[str, int] = {}
+        for event in events:
+            created_by = event.get("createdBy", "Unknown")
+            creator_counts[created_by] = creator_counts.get(created_by, 0) + 1
+
+        print("\n👥 Events by Creator:")
+        for creator_id, count in sorted(
+            creator_counts.items(), key=lambda x: x[1], reverse=True
+        ):
+            if creator_id in users:
+                user = users[creator_id]
+                creator_name = user.get("name", "Unknown Name")
+                creator_email = user.get("email", "Unknown Email")
+                print(f"   {creator_name} ({creator_email}): {count} events")
+            else:
+                print(f"   User ID {creator_id}: {count} events (user not found)")
+
+    def list_events_without_creators(self) -> None:
+        """List events that don't have a createdBy field (for debugging)."""
+        print("🔍 Checking for events without creator information...")
+
+        events = self.get_all_events()
+        events_without_creator = [
+            e for e in events if "createdBy" not in e or not e["createdBy"]
+        ]
+
+        if events_without_creator:
+            print(
+                f"⚠️  Found {len(events_without_creator)} events without creator information:"
+            )
+            for event in events_without_creator:
+                print(
+                    f"   - {event.get('eventName', 'Unknown')} ({event.get('eventId', 'Unknown ID')})"
+                )
+        else:
+            print("✅ All events have creator information")
+
 
 def main():
-    """Main function to run the venue listing script."""
-    print("🚀 Starting Venue Listing Script")
+    """Main function to run the venue and event listing script."""
+    print("🚀 Starting Venue and Event Listing Script")
     print("=" * 50)
 
     # Check if DynamoDB Local is running
-    lister = VenueLister()
+    lister = DataLister()
 
     try:
         # List venues with creators
@@ -272,6 +414,14 @@ def main():
         # Also check for venues without creators
         print("\n")
         lister.list_venues_without_creators()
+
+        # List events with creators
+        print("\n")
+        lister.list_events_with_creators()
+
+        # Also check for events without creators
+        print("\n")
+        lister.list_events_without_creators()
 
     except KeyboardInterrupt:
         print("\n\n⏹️  Script interrupted by user")

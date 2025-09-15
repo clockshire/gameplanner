@@ -24,9 +24,10 @@ class RoomService {
    * @param {number} roomData.capacity - Maximum capacity
    * @param {string} roomData.roomType - Type of room (e.g., 'conference', 'meeting', 'gaming')
    * @param {Object} roomData.amenities - Room amenities
+   * @param {string} createdBy - User ID of the creator
    * @returns {Promise<Object>} Created room
    */
-  async createRoom(roomData) {
+  async createRoom(roomData, createdBy) {
     try {
       const roomId = uuidv4();
       const now = new Date().toISOString();
@@ -41,6 +42,7 @@ class RoomService {
         capacity: roomData.capacity || 0,
         roomType: roomData.roomType || 'general',
         amenities: roomData.amenities || {},
+        createdBy: createdBy,
         createdAt: now,
         updatedAt: now,
         entityType: 'ROOM',

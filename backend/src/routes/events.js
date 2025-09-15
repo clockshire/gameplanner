@@ -53,6 +53,9 @@ router.post('/', authenticateUser, async (req, res) => {
       });
     }
 
+    // Use createdBy from request body if provided, otherwise use authenticated user
+    const creatorId = createdBy || req.user.userId;
+
     const result = await eventService.createEvent({
       name,
       description,
@@ -62,7 +65,7 @@ router.post('/', authenticateUser, async (req, res) => {
       endTime,
       venueId,
       maxParticipants,
-      createdBy: req.user.userId,
+      createdBy: creatorId,
     });
 
     if (result.success) {

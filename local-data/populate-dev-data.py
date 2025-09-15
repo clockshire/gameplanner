@@ -19,16 +19,69 @@ class DataPopulator:
 
     def __init__(self, api_base_url: str = "http://localhost:3001/api"):
         self.api_base_url = api_base_url
-        self.user_id = "a6f3aec2-7d19-48d5-85a4-7602da37e79f"  # Chisel's user ID
+        self.user_id = "a6f3aec2-7d19-48d5-85a4-7602da37e79f"  # Test user ID
+        self.session_token = None
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
 
     def check_server(self) -> bool:
         """Check if the server is running and accessible."""
         try:
-            response = self.session.get(f"{self.api_base_url}/venues", timeout=5)
+            # Try a simple health check or a non-authenticated endpoint
+            response = self.session.get(
+                f"{self.api_base_url.replace('/api', '')}/", timeout=5
+            )
             return response.status_code == 200
         except requests.RequestException:
+            # If that fails, try the venues endpoint and accept 401 as "server running"
+            try:
+                response = self.session.get(f"{self.api_base_url}/venues", timeout=5)
+                return response.status_code in [
+                    200,
+                    401,
+                ]  # 401 means server is running but auth required
+            except requests.RequestException:
+                return False
+
+    def authenticate(self) -> bool:
+        """Authenticate and get session token."""
+        try:
+            # First try to sign up (in case user doesn't exist)
+            signup_data = {"email": "test@example.com", "name": "Test User"}
+
+            signup_response = self.session.post(
+                f"{self.api_base_url}/auth/signup", json=signup_data
+            )
+            if signup_response.status_code not in [
+                200,
+                201,
+                409,
+            ]:  # 409 = user already exists
+                print(f"⚠️  Signup failed: {signup_response.status_code}")
+
+            # Now try to login
+            login_data = {"email": "test@example.com", "password": "password123"}
+
+            login_response = self.session.post(
+                f"{self.api_base_url}/auth/login", json=login_data
+            )
+            if login_response.status_code == 200:
+                data = login_response.json()
+                self.session_token = data.get("data", {}).get("sessionToken")
+                if self.session_token:
+                    self.session.headers.update(
+                        {"Authorization": f"Bearer {self.session_token}"}
+                    )
+                    print("✅ Authentication successful")
+                    return True
+                else:
+                    print("❌ No session token received")
+                    return False
+            else:
+                print(f"❌ Login failed: {login_response.status_code}")
+                return False
+        except requests.RequestException as e:
+            print(f"❌ Authentication error: {e}")
             return False
 
     def get_all_venues(self) -> List[Dict]:
@@ -214,6 +267,12 @@ class DataPopulator:
             )
             sys.exit(1)
         print("✅ Server is running")
+
+        # Authenticate to get session token
+        print("🔐 Authenticating...")
+        if not self.authenticate():
+            print("❌ Authentication failed. Please check your credentials.")
+            sys.exit(1)
 
         # Define venue data
         venues_data = [
@@ -457,7 +516,6 @@ class DataPopulator:
                 continue
 
             event_data["venueId"] = created_venues[venue_name]
-            event_data["createdBy"] = self.user_id
 
             event_id = self.create_event(event_data)
             if event_id:

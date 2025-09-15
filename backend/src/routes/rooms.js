@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, description, venueId, capacity, roomType, amenities } =
+    const { name, description, venueId, capacity, roomType, amenities, createdBy } =
       req.body;
 
     // Validate required fields
@@ -58,14 +58,20 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const result = await roomService.createRoom({
-      name,
-      description,
-      venueId,
-      capacity,
-      roomType,
-      amenities,
-    });
+    // Use createdBy from request body if provided, otherwise use authenticated user
+    const creatorId = createdBy || req.user?.userId || null;
+
+    const result = await roomService.createRoom(
+      {
+        name,
+        description,
+        venueId,
+        capacity,
+        roomType,
+        amenities,
+      },
+      creatorId
+    );
 
     if (result.success) {
       res.status(201).json(result);

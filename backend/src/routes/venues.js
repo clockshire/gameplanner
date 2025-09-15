@@ -25,6 +25,7 @@ router.post('/', authenticateUser, async (req, res) => {
       websiteURL,
       capacity,
       mapLink,
+      createdBy,
     } = req.body;
 
     // Validate required fields
@@ -44,6 +45,9 @@ router.post('/', authenticateUser, async (req, res) => {
       });
     }
 
+    // Use createdBy from request body if provided, otherwise use authenticated user
+    const creatorId = createdBy || req.user.userId;
+
     const result = await venueService.createVenue(
       {
         name,
@@ -55,7 +59,7 @@ router.post('/', authenticateUser, async (req, res) => {
         capacity,
         mapLink,
       },
-      req.user.userId
+      creatorId
     );
 
     if (result.success) {
