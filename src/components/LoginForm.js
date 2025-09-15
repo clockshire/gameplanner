@@ -42,6 +42,10 @@ function LoginForm({ onSwitchToSignup, onLoginSuccess }) {
 
     try {
       await login(email);
+      console.log(
+        '✅ Login successful, calling onLoginSuccess:',
+        !!onLoginSuccess
+      );
       onLoginSuccess && onLoginSuccess();
     } catch (error) {
       // Error is handled by auth context

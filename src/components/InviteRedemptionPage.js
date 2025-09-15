@@ -9,7 +9,7 @@ const { useState, useEffect } = React;
  * InviteRedemptionPage component
  * Shows invitation details and handles redemption
  */
-function InviteRedemptionPage({ inviteCode, onBack }) {
+function InviteRedemptionPage({ inviteCode, onBack, onLoginWithRedirect }) {
   const { sessionToken, isAuthenticated, user } = useAuth();
   const [invitation, setInvitation] = useState(null);
   const [event, setEvent] = useState(null);
@@ -580,7 +580,20 @@ function InviteRedemptionPage({ inviteCode, onBack }) {
               </p>
               <button
                 onClick={() => {
-                  window.location.hash = '#login';
+                  console.log(
+                    '🔘 Login button clicked, onLoginWithRedirect:',
+                    !!onLoginWithRedirect
+                  );
+                  if (onLoginWithRedirect) {
+                    console.log(
+                      '📞 Calling onLoginWithRedirect with:',
+                      `#invite/${inviteCode}`
+                    );
+                    onLoginWithRedirect(`#invite/${inviteCode}`);
+                  } else {
+                    console.log('🔄 Fallback to hash change');
+                    window.location.hash = '#login';
+                  }
                 }}
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
               >

@@ -16,6 +16,7 @@ function App() {
   const [managingInvitesEvent, setManagingInvitesEvent] = useState(null);
   const [showManageInvitesModal, setShowManageInvitesModal] = useState(false);
   const [inviteCode, setInviteCode] = useState(null);
+  const [redirectAfterAuth, setRedirectAfterAuth] = useState(null);
 
   /**
    * Handle logout
@@ -28,7 +29,31 @@ function App() {
    * Handle successful authentication
    */
   const handleAuthSuccess = () => {
+    console.log(
+      '🔐 Auth success called, redirectAfterAuth:',
+      redirectAfterAuth
+    );
     setShowAuthModal(false);
+
+    // If there's a redirect URL, navigate to it
+    if (redirectAfterAuth) {
+      console.log('🔄 Redirecting to:', redirectAfterAuth);
+      window.location.hash = redirectAfterAuth;
+      setRedirectAfterAuth(null);
+    } else {
+      console.log('❌ No redirect URL found');
+    }
+  };
+
+  /**
+   * Handle login with redirect
+   */
+  const handleLoginWithRedirect = (redirectUrl) => {
+    console.log('🚀 Login with redirect called:', redirectUrl);
+    // Store redirect URL in the hash as a parameter
+    const loginUrl = `#login?redirect=${encodeURIComponent(redirectUrl)}`;
+    console.log('🔗 Navigating to:', loginUrl);
+    window.location.hash = loginUrl;
   };
 
   /**
@@ -207,6 +232,19 @@ function App() {
         setCurrentPage('events');
       } else if (hash === 'venues') {
         setCurrentPage('venues');
+      } else if (hash.startsWith('login')) {
+        console.log('📄 Login page detected, hash:', hash);
+        setCurrentPage('login');
+        // Parse redirect parameter
+        const urlParams = new URLSearchParams(hash.split('?')[1] || '');
+        const redirect = urlParams.get('redirect');
+        console.log('🔍 Parsed redirect parameter:', redirect);
+        if (redirect) {
+          console.log('✅ Setting redirectAfterAuth to:', redirect);
+          setRedirectAfterAuth(redirect);
+        } else {
+          console.log('❌ No redirect parameter found');
+        }
       } else if (hash === 'home') {
         setCurrentPage('home');
       } else {
@@ -356,6 +394,7 @@ function App() {
           <InviteRedemptionPage
             inviteCode={inviteCode}
             onBack={() => setCurrentPage('home')}
+            onLoginWithRedirect={handleLoginWithRedirect}
           />
         ) : currentPage === 'venues' ? (
           <VenuesPage
@@ -368,6 +407,33 @@ function App() {
             onBack={handleBackFromEditVenue}
             onVenueUpdated={handleVenueUpdated}
           />
+        ) : currentPage === 'login' ? (
+          <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8">
+              <div>
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+                  Sign in to your account
+                </h2>
+                <p className="mt-2 text-center text-sm text-gray-400">
+                  Or{' '}
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="font-medium text-blue-400 hover:text-blue-300"
+                  >
+                    create a new account
+                  </button>
+                </p>
+              </div>
+              <div className="mt-8 space-y-6">
+                <div className="bg-gray-800 rounded-lg p-6">
+                  <LoginForm
+                    onSwitchToSignup={() => setShowAuthModal(true)}
+                    onLoginSuccess={handleAuthSuccess}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="px-4 py-6 sm:px-0">

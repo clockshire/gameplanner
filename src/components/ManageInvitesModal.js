@@ -20,6 +20,7 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
     type: 'generic',
     description: '',
   });
+  const [copiedInviteCode, setCopiedInviteCode] = useState(null);
 
   /**
    * Fetch invitations for the event
@@ -135,10 +136,20 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
    */
   const copyToClipboard = (inviteCode) => {
     const inviteUrl = `${window.location.origin}/#invite/${inviteCode}`;
-    navigator.clipboard.writeText(inviteUrl).then(() => {
-      // You could add a toast notification here
-      console.log('Invite URL copied to clipboard');
-    });
+    navigator.clipboard
+      .writeText(inviteUrl)
+      .then(() => {
+        // Show visual feedback
+        setCopiedInviteCode(inviteCode);
+        // Hide feedback after 2 seconds
+        setTimeout(() => {
+          setCopiedInviteCode(null);
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error('Failed to copy to clipboard:', err);
+        // You could show an error message here
+      });
   };
 
   /**
@@ -206,6 +217,33 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
             </svg>
           </button>
         </div>
+
+        {/* Success Toast */}
+        {copiedInviteCode && (
+          <div className="bg-green-900 border border-green-700 text-green-100 px-4 py-3 rounded mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-green-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium">Success!</h3>
+                <div className="mt-2 text-sm">
+                  Invitation link copied to clipboard
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -383,16 +421,22 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
                           invitation.type === 'one-time' &&
                           invitation.usesLeft === 0
                             ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                            : copiedInviteCode === invitation.inviteCode
+                            ? 'bg-green-600'
                             : 'bg-blue-600 hover:bg-blue-500'
                         }`}
                         title={
                           invitation.type === 'one-time' &&
                           invitation.usesLeft === 0
                             ? 'Cannot copy redeemed one-time invitation'
+                            : copiedInviteCode === invitation.inviteCode
+                            ? 'Copied to clipboard!'
                             : 'Copy invitation link'
                         }
                       >
-                        Copy Link
+                        {copiedInviteCode === invitation.inviteCode
+                          ? 'Copied!'
+                          : 'Copy Link'}
                       </button>
                       <button
                         onClick={() =>
