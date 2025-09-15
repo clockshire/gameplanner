@@ -4,3 +4,4 @@ mypy
 black
 python-dateutil
 types-python-dateutil
+boto3
