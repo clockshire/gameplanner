@@ -323,7 +323,11 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
               {invitations.map((invitation) => (
                 <div
                   key={invitation.inviteCode}
-                  className="bg-gray-700 rounded-lg p-4"
+                  className={`rounded-lg p-4 ${
+                    invitation.type === 'one-time' && invitation.usesLeft === 0
+                      ? 'bg-gray-600 border border-gray-500'
+                      : 'bg-gray-700'
+                  }`}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -334,26 +338,27 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             invitation.type === 'one-time'
-                              ? 'bg-orange-900 text-orange-300'
+                              ? invitation.usesLeft > 0
+                                ? 'bg-orange-900 text-orange-300'
+                                : 'bg-gray-800 text-gray-400'
                               : 'bg-green-900 text-green-300'
                           }`}
                         >
                           {invitation.type === 'one-time'
-                            ? 'One-time'
+                            ? invitation.usesLeft > 0
+                              ? 'One-time'
+                              : 'Redeemed'
                             : 'Generic'}
                         </span>
-                        <span
-                          className={`text-sm ${
-                            invitation.type === 'one-time'
-                              ? invitation.usesLeft > 0
-                                ? 'text-orange-400'
-                                : 'text-green-400'
-                              : 'text-gray-400'
-                          }`}
-                        >
-                          {invitation.type === 'one-time' ? 'Status:' : 'Uses:'}{' '}
-                          {formatUsesLeft(invitation.usesLeft, invitation.type)}
-                        </span>
+                        {invitation.type !== 'one-time' && (
+                          <span className="text-sm text-gray-400">
+                            Uses:{' '}
+                            {formatUsesLeft(
+                              invitation.usesLeft,
+                              invitation.type
+                            )}
+                          </span>
+                        )}
                       </div>
 
                       {invitation.description && (
@@ -370,7 +375,22 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => copyToClipboard(invitation.inviteCode)}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition-colors"
+                        disabled={
+                          invitation.type === 'one-time' &&
+                          invitation.usesLeft === 0
+                        }
+                        className={`px-3 py-1 text-white text-sm rounded transition-colors ${
+                          invitation.type === 'one-time' &&
+                          invitation.usesLeft === 0
+                            ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                            : 'bg-blue-600 hover:bg-blue-500'
+                        }`}
+                        title={
+                          invitation.type === 'one-time' &&
+                          invitation.usesLeft === 0
+                            ? 'Cannot copy redeemed one-time invitation'
+                            : 'Copy invitation link'
+                        }
                       >
                         Copy Link
                       </button>
@@ -378,7 +398,22 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
                         onClick={() =>
                           handleDeleteInvitation(invitation.inviteCode)
                         }
-                        className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-sm rounded transition-colors"
+                        disabled={
+                          invitation.type === 'one-time' &&
+                          invitation.usesLeft === 0
+                        }
+                        className={`px-3 py-1 text-white text-sm rounded transition-colors ${
+                          invitation.type === 'one-time' &&
+                          invitation.usesLeft === 0
+                            ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                            : 'bg-red-600 hover:bg-red-500'
+                        }`}
+                        title={
+                          invitation.type === 'one-time' &&
+                          invitation.usesLeft === 0
+                            ? 'Cannot delete redeemed one-time invitation'
+                            : 'Delete invitation'
+                        }
                       >
                         Delete
                       </button>
