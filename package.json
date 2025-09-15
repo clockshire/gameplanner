@@ -10,7 +10,6 @@
     "server:dev": "nodemon backend/src/server.js",
     "dev": "concurrently \"npm run dynamodb:start\" \"npm run server:dev\" \"npm run web:dev\"",
     "build": "echo 'Build complete - static files ready for deployment'",
-    "test": "echo 'No tests configured yet'",
     "dynamodb:janky-start": "docker run -d --name dynamodb-local -p 8000:8000 -v $(pwd)/docker/dynamodb:/home/dynamodblocal/data amazon/dynamodb-local:latest -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data",
     "dynamodb:janky-stop": "docker stop dynamodb-local && docker rm dynamodb-local",
     "dynamodb:setup": "node backend/scripts/setup-local.js",
