@@ -13,6 +13,9 @@ function App() {
   const [showDeleteEventModal, setShowDeleteEventModal] = useState(false);
   const [managingRoomsEvent, setManagingRoomsEvent] = useState(null);
   const [showManageRoomsModal, setShowManageRoomsModal] = useState(false);
+  const [managingInvitesEvent, setManagingInvitesEvent] = useState(null);
+  const [showManageInvitesModal, setShowManageInvitesModal] = useState(false);
+  const [inviteCode, setInviteCode] = useState(null);
 
   /**
    * Handle logout
@@ -149,6 +152,30 @@ function App() {
   };
 
   /**
+   * Handle manage invites
+   */
+  const handleManageInvites = (event) => {
+    setManagingInvitesEvent(event);
+    setShowManageInvitesModal(true);
+  };
+
+  /**
+   * Handle close manage invites modal
+   */
+  const handleCloseManageInvitesModal = () => {
+    setManagingInvitesEvent(null);
+    setShowManageInvitesModal(false);
+  };
+
+  /**
+   * Handle invite created
+   */
+  const handleInviteCreated = () => {
+    // Could refresh event details or show notification
+    console.log('Invite created successfully');
+  };
+
+  /**
    * Handle rooms updated
    */
   const handleRoomsUpdated = () => {
@@ -160,6 +187,43 @@ function App() {
       window.location.reload();
     }
   };
+
+  /**
+   * Handle URL hash changes for routing
+   */
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1); // Remove the #
+
+      if (hash.startsWith('invite/')) {
+        const code = hash.split('/')[1];
+        setInviteCode(code);
+        setCurrentPage('invite-redemption');
+      } else if (hash.startsWith('event-details/')) {
+        const eventId = hash.split('/')[1];
+        setSelectedEventId(eventId);
+        setCurrentPage(`event-details/${eventId}`);
+      } else if (hash === 'events') {
+        setCurrentPage('events');
+      } else if (hash === 'venues') {
+        setCurrentPage('venues');
+      } else if (hash === 'home') {
+        setCurrentPage('home');
+      } else {
+        setCurrentPage('home');
+      }
+    };
+
+    // Handle initial load
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   /**
    * Handle browser back/forward navigation
@@ -286,6 +350,12 @@ function App() {
             onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onManageRooms={handleManageRooms}
+            onManageInvites={handleManageInvites}
+          />
+        ) : currentPage === 'invite-redemption' && inviteCode ? (
+          <InviteRedemptionPage
+            inviteCode={inviteCode}
+            onBack={() => setCurrentPage('home')}
           />
         ) : currentPage === 'venues' ? (
           <VenuesPage
@@ -342,6 +412,14 @@ function App() {
         onClose={handleCloseManageRoomsModal}
         onRoomsUpdated={handleRoomsUpdated}
         currentUser={user}
+      />
+
+      {/* Manage Event Invites Modal */}
+      <ManageInvitesModal
+        event={managingInvitesEvent}
+        isOpen={showManageInvitesModal}
+        onClose={handleCloseManageInvitesModal}
+        onInviteCreated={handleInviteCreated}
       />
     </div>
   );

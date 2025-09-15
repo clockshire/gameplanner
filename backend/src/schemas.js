@@ -270,6 +270,73 @@ const bookingsTableSchema = {
   BillingMode: 'PAY_PER_REQUEST',
 };
 
+/**
+ * Invitations table schema
+ * Stores event invitation codes and their usage
+ */
+const invitationsTableSchema = {
+  TableName: 'invitations',
+  KeySchema: [
+    {
+      AttributeName: 'PK',
+      KeyType: 'HASH', // Partition key
+    },
+    {
+      AttributeName: 'SK',
+      KeyType: 'RANGE', // Sort key
+    },
+  ],
+  AttributeDefinitions: [
+    {
+      AttributeName: 'PK',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'SK',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'inviteCode',
+      AttributeType: 'S', // String
+    },
+    {
+      AttributeName: 'invitedEventId',
+      AttributeType: 'S', // String
+    },
+  ],
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: 'InviteCodeIndex',
+      KeySchema: [
+        {
+          AttributeName: 'inviteCode',
+          KeyType: 'HASH',
+        },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+    },
+    {
+      IndexName: 'EventInvitesIndex',
+      KeySchema: [
+        {
+          AttributeName: 'invitedEventId',
+          KeyType: 'HASH',
+        },
+        {
+          AttributeName: 'SK',
+          KeyType: 'RANGE',
+        },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+    },
+  ],
+  BillingMode: 'PAY_PER_REQUEST',
+};
+
 module.exports = {
   usersTableSchema,
   eventsTableSchema,
@@ -277,4 +344,5 @@ module.exports = {
   roomsTableSchema,
   gamesTableSchema,
   bookingsTableSchema,
+  invitationsTableSchema,
 };

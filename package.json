@@ -25,6 +25,7 @@
     "aws-sdk": "^2.1490.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "referral-codes": "^3.0.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

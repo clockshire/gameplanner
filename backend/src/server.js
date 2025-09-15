@@ -11,12 +11,14 @@ const venueRoutes = require('./routes/venues');
 const eventRoutes = require('./routes/events');
 const roomRoutes = require('./routes/rooms');
 const eventRoomRoutes = require('./routes/eventRooms');
+const invitationRoutes = require('./routes/invitations');
 const { testConnection, createTableIfNotExists } = require('./dynamodb');
 const {
   usersTableSchema,
   venuesTableSchema,
   eventsTableSchema,
   roomsTableSchema,
+  invitationsTableSchema,
 } = require('./schemas');
 
 const app = express();
@@ -39,6 +41,7 @@ app.use('/api/venues', venueRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/events', eventRoomRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/invitations', invitationRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -134,6 +137,18 @@ async function startServer() {
 
     if (!roomsTableCreated) {
       console.error('❌ Failed to create rooms table');
+      process.exit(1);
+    }
+
+    // Create invitations table if it doesn't exist
+    console.log('📝 Ensuring invitations table exists...');
+    const invitationsTableCreated = await createTableIfNotExists(
+      'invitations',
+      invitationsTableSchema
+    );
+
+    if (!invitationsTableCreated) {
+      console.error('❌ Failed to create invitations table');
       process.exit(1);
     }
 
