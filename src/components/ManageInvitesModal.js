@@ -144,7 +144,10 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
   /**
    * Format uses left display
    */
-  const formatUsesLeft = (usesLeft) => {
+  const formatUsesLeft = (usesLeft, type) => {
+    if (type === 'one-time') {
+      return usesLeft > 0 ? 'Unclaimed' : 'Redeemed';
+    }
     if (usesLeft === 'infinite') return '∞';
     return usesLeft.toString();
   };
@@ -339,8 +342,17 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
                             ? 'One-time'
                             : 'Generic'}
                         </span>
-                        <span className="text-sm text-gray-400">
-                          Uses: {formatUsesLeft(invitation.usesLeft)}
+                        <span
+                          className={`text-sm ${
+                            invitation.type === 'one-time'
+                              ? invitation.usesLeft > 0
+                                ? 'text-orange-400'
+                                : 'text-green-400'
+                              : 'text-gray-400'
+                          }`}
+                        >
+                          {invitation.type === 'one-time' ? 'Status:' : 'Uses:'}{' '}
+                          {formatUsesLeft(invitation.usesLeft, invitation.type)}
                         </span>
                       </div>
 
