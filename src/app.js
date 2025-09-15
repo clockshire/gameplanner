@@ -29,19 +29,12 @@ function App() {
    * Handle successful authentication
    */
   const handleAuthSuccess = () => {
-    console.log(
-      '🔐 Auth success called, redirectAfterAuth:',
-      redirectAfterAuth
-    );
     setShowAuthModal(false);
 
     // If there's a redirect URL, navigate to it
     if (redirectAfterAuth) {
-      console.log('🔄 Redirecting to:', redirectAfterAuth);
       window.location.hash = redirectAfterAuth;
       setRedirectAfterAuth(null);
-    } else {
-      console.log('❌ No redirect URL found');
     }
   };
 
@@ -49,11 +42,8 @@ function App() {
    * Handle login with redirect
    */
   const handleLoginWithRedirect = (redirectUrl) => {
-    console.log('🚀 Login with redirect called:', redirectUrl);
     // Store redirect URL in the hash as a parameter
-    const loginUrl = `#login?redirect=${encodeURIComponent(redirectUrl)}`;
-    console.log('🔗 Navigating to:', loginUrl);
-    window.location.hash = loginUrl;
+    window.location.hash = `#login?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   /**
@@ -233,17 +223,12 @@ function App() {
       } else if (hash === 'venues') {
         setCurrentPage('venues');
       } else if (hash.startsWith('login')) {
-        console.log('📄 Login page detected, hash:', hash);
         setCurrentPage('login');
         // Parse redirect parameter
         const urlParams = new URLSearchParams(hash.split('?')[1] || '');
         const redirect = urlParams.get('redirect');
-        console.log('🔍 Parsed redirect parameter:', redirect);
         if (redirect) {
-          console.log('✅ Setting redirectAfterAuth to:', redirect);
           setRedirectAfterAuth(redirect);
-        } else {
-          console.log('❌ No redirect parameter found');
         }
       } else if (hash === 'home') {
         setCurrentPage('home');

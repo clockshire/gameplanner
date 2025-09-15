@@ -580,18 +580,9 @@ function InviteRedemptionPage({ inviteCode, onBack, onLoginWithRedirect }) {
               </p>
               <button
                 onClick={() => {
-                  console.log(
-                    '🔘 Login button clicked, onLoginWithRedirect:',
-                    !!onLoginWithRedirect
-                  );
                   if (onLoginWithRedirect) {
-                    console.log(
-                      '📞 Calling onLoginWithRedirect with:',
-                      `#invite/${inviteCode}`
-                    );
                     onLoginWithRedirect(`#invite/${inviteCode}`);
                   } else {
-                    console.log('🔄 Fallback to hash change');
                     window.location.hash = '#login';
                   }
                 }}

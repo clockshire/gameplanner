@@ -12,10 +12,6 @@ function AuthModal({ isOpen, onClose, onAuthSuccess }) {
    * Handle successful authentication
    */
   const handleAuthSuccess = () => {
-    console.log(
-      '🎉 AuthModal handleAuthSuccess called, onAuthSuccess:',
-      !!onAuthSuccess
-    );
     onAuthSuccess && onAuthSuccess();
     onClose();
   };
