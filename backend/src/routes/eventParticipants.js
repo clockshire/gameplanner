@@ -239,4 +239,38 @@ router.get('/count/:eventId', authenticateUser, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/event-participants/event/:eventId/public
+ * Get all participants for an event (public endpoint)
+ * No authentication required
+ */
+router.get('/event/:eventId/public', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const result = await eventParticipantsService.getEventParticipants(eventId);
+
+    if (result.success) {
+      return res.json({
+        success: true,
+        data: result.data,
+        message: 'Event participants retrieved successfully',
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: result.error,
+        message: result.message,
+      });
+    }
+  } catch (error) {
+    console.error('Error getting event participants:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+      message: 'Failed to get event participants',
+    });
+  }
+});
+
 module.exports = router;

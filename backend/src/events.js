@@ -5,6 +5,7 @@
 
 const { dynamodb } = require('./dynamodb');
 const { v4: uuidv4 } = require('uuid');
+const EventParticipantsService = require('./eventParticipants');
 
 /**
  * Event Service class
@@ -46,7 +47,7 @@ class EventService {
         endTime: eventData.endTime || '',
         venueId: eventData.venueId || null,
         maxParticipants: eventData.maxParticipants || 0,
-        currentParticipants: 0,
+        currentParticipants: 1, // Creator is automatically a participant
         status: 'active',
         createdBy: eventData.createdBy || null, // User ID who created the event
         createdAt: now,
@@ -61,6 +62,32 @@ class EventService {
       };
 
       await dynamodb.put(params).promise();
+
+      // Add the creator as the first participant
+      if (eventData.createdBy) {
+        try {
+          const eventParticipantsService = new EventParticipantsService();
+          const participantResult =
+            await eventParticipantsService.addParticipant(
+              eventId,
+              eventData.createdBy,
+              eventData.creatorName || 'Event Creator',
+              eventData.creatorEmail || '',
+              'CREATOR' // Special code for creator
+            );
+
+          if (!participantResult.success) {
+            console.warn(
+              'Failed to add creator as participant:',
+              participantResult.error
+            );
+            // Don't fail the event creation if participant addition fails
+          }
+        } catch (error) {
+          console.warn('Error adding creator as participant:', error);
+          // Don't fail the event creation if participant addition fails
+        }
+      }
 
       return {
         success: true,

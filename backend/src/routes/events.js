@@ -70,6 +70,8 @@ router.post('/', authenticateUser, async (req, res) => {
       venueId,
       maxParticipants,
       createdBy: creatorId,
+      creatorName: req.user.name,
+      creatorEmail: req.user.email,
     });
 
     if (result.success) {

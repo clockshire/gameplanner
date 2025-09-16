@@ -25,8 +25,31 @@ function EventDetailsPage({
   const [rooms, setRooms] = useState([]);
   const [eventRooms, setEventRooms] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [participantCount, setParticipantCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  /**
+   * Fetch participant count for the event
+   */
+  const fetchParticipantCount = async () => {
+    if (!eventId) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/event-participants/event/${eventId}/public`
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        const count = data.data ? data.data.length : 0;
+        setParticipantCount(count);
+      }
+    } catch (err) {
+      console.error('Error fetching participant count:', err);
+    }
+  };
 
   /**
    * Fetch invitations for the event
@@ -377,6 +400,13 @@ function EventDetailsPage({
     }
   }, [event, currentUser, sessionToken]);
 
+  // Fetch participant count when event is loaded
+  useEffect(() => {
+    if (event && event.eventId) {
+      fetchParticipantCount();
+    }
+  }, [event]);
+
   // Fetch invitations when event is loaded and user is the owner
   useEffect(() => {
     if (
@@ -723,8 +753,8 @@ function EventDetailsPage({
                       />
                     </svg>
                     <span>
-                      {event.currentParticipants || 0} /{' '}
-                      {event.maxParticipants || '∞'} participants
+                      {participantCount} / {event.maxParticipants || '∞'}{' '}
+                      participants
                     </span>
                   </div>
                 </div>
