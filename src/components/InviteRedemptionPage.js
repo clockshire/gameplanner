@@ -359,6 +359,139 @@ function InviteRedemptionPage({ inviteCode, onBack, onLoginWithRedirect }) {
     );
   }
 
+  // Check if invitation is redeemed (one-time invitation with no uses left)
+  const isRedeemed =
+    invitation && invitation.type === 'one-time' && invitation.usesLeft === 0;
+
+  if (isRedeemed) {
+    return (
+      <div className="min-h-screen bg-gray-900">
+        {/* Header */}
+        <div className="bg-gray-800 border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-6">
+              <div className="flex items-center">
+                {onBack && (
+                  <button
+                    onClick={onBack}
+                    className="mr-4 text-gray-400 hover:text-white transition-colors"
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                )}
+                <h1 className="text-2xl font-bold text-white">
+                  Event Invitation
+                </h1>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Event Header */}
+          {event && (
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-white mb-2">
+                {event.eventName}
+              </h1>
+              <p className="text-xl text-gray-300">
+                This invitation has already been redeemed
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Invitation Details */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Invitation Details
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Invitation Code
+                  </label>
+                  <div className="font-mono text-lg text-blue-400">
+                    {invitation?.inviteCode}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Type
+                  </label>
+                  <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-orange-900 text-orange-300">
+                    One-time Use
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Status
+                  </label>
+                  <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-red-900 text-red-300">
+                    Redeemed
+                  </span>
+                </div>
+
+                {venue && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Venue
+                    </label>
+                    <div className="text-white">{venue.venueName}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Redeemed Message */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <div className="text-center">
+                <div className="bg-gray-700 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="h-8 w-8 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Invitation Already Redeemed
+                </h3>
+                <p className="text-gray-400">
+                  This invitation has already been used and cannot be redeemed
+                  again.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Header */}
