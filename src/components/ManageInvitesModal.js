@@ -358,113 +358,116 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
             </div>
           ) : (
             <div className="space-y-3">
-              {invitations.map((invitation) => (
-                <div
-                  key={invitation.inviteCode}
-                  className={`rounded-lg p-4 ${
-                    invitation.type === 'one-time' && invitation.usesLeft === 0
-                      ? 'bg-gray-600 border border-gray-500'
-                      : 'bg-gray-700'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className="font-mono text-lg font-bold text-blue-400">
-                          {invitation.inviteCode}
-                        </span>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            invitation.type === 'one-time'
-                              ? invitation.usesLeft > 0
-                                ? 'bg-orange-900 text-orange-300'
-                                : 'bg-gray-800 text-gray-400'
-                              : 'bg-green-900 text-green-300'
-                          }`}
-                        >
-                          {invitation.type === 'one-time'
-                            ? invitation.usesLeft > 0
-                              ? 'One-time'
-                              : 'Redeemed'
-                            : 'Generic'}
-                        </span>
-                        {invitation.type !== 'one-time' && (
-                          <span className="text-sm text-gray-400">
-                            Uses:{' '}
-                            {formatUsesLeft(
-                              invitation.usesLeft,
-                              invitation.type
-                            )}
+              {invitations
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map((invitation) => (
+                  <div
+                    key={invitation.inviteCode}
+                    className={`rounded-lg p-4 ${
+                      invitation.type === 'one-time' &&
+                      invitation.usesLeft === 0
+                        ? 'bg-gray-600 border border-gray-500'
+                        : 'bg-gray-700'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <span className="font-mono text-lg font-bold text-blue-400">
+                            {invitation.inviteCode}
                           </span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              invitation.type === 'one-time'
+                                ? invitation.usesLeft > 0
+                                  ? 'bg-orange-900 text-orange-300'
+                                  : 'bg-gray-800 text-gray-400'
+                                : 'bg-green-900 text-green-300'
+                            }`}
+                          >
+                            {invitation.type === 'one-time'
+                              ? invitation.usesLeft > 0
+                                ? 'One-time'
+                                : 'Redeemed'
+                              : 'Generic'}
+                          </span>
+                          {invitation.type !== 'one-time' && (
+                            <span className="text-sm text-gray-400">
+                              Uses:{' '}
+                              {formatUsesLeft(
+                                invitation.usesLeft,
+                                invitation.type
+                              )}
+                            </span>
+                          )}
+                        </div>
+
+                        {invitation.description && (
+                          <p className="text-gray-300 text-sm mb-2">
+                            {invitation.description}
+                          </p>
                         )}
+
+                        <p className="text-xs text-gray-500">
+                          Created: {formatDate(invitation.createdAt)}
+                        </p>
                       </div>
 
-                      {invitation.description && (
-                        <p className="text-gray-300 text-sm mb-2">
-                          {invitation.description}
-                        </p>
-                      )}
-
-                      <p className="text-xs text-gray-500">
-                        Created: {formatDate(invitation.createdAt)}
-                      </p>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => copyToClipboard(invitation.inviteCode)}
-                        disabled={
-                          invitation.type === 'one-time' &&
-                          invitation.usesLeft === 0
-                        }
-                        className={`px-3 py-1 text-white text-sm rounded transition-colors ${
-                          invitation.type === 'one-time' &&
-                          invitation.usesLeft === 0
-                            ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                            : copiedInviteCode === invitation.inviteCode
-                            ? 'bg-green-600'
-                            : 'bg-blue-600 hover:bg-blue-500'
-                        }`}
-                        title={
-                          invitation.type === 'one-time' &&
-                          invitation.usesLeft === 0
-                            ? 'Cannot copy redeemed one-time invitation'
-                            : copiedInviteCode === invitation.inviteCode
-                            ? 'Copied to clipboard!'
-                            : 'Copy invitation link'
-                        }
-                      >
-                        {copiedInviteCode === invitation.inviteCode
-                          ? 'Copied!'
-                          : 'Copy Link'}
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleDeleteInvitation(invitation.inviteCode)
-                        }
-                        disabled={
-                          invitation.type === 'one-time' &&
-                          invitation.usesLeft === 0
-                        }
-                        className={`px-3 py-1 text-white text-sm rounded transition-colors ${
-                          invitation.type === 'one-time' &&
-                          invitation.usesLeft === 0
-                            ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                            : 'bg-red-600 hover:bg-red-500'
-                        }`}
-                        title={
-                          invitation.type === 'one-time' &&
-                          invitation.usesLeft === 0
-                            ? 'Cannot delete redeemed one-time invitation'
-                            : 'Delete invitation'
-                        }
-                      >
-                        Delete
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => copyToClipboard(invitation.inviteCode)}
+                          disabled={
+                            invitation.type === 'one-time' &&
+                            invitation.usesLeft === 0
+                          }
+                          className={`px-3 py-1 text-white text-sm rounded transition-colors ${
+                            invitation.type === 'one-time' &&
+                            invitation.usesLeft === 0
+                              ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                              : copiedInviteCode === invitation.inviteCode
+                              ? 'bg-green-600'
+                              : 'bg-blue-600 hover:bg-blue-500'
+                          }`}
+                          title={
+                            invitation.type === 'one-time' &&
+                            invitation.usesLeft === 0
+                              ? 'Cannot copy redeemed one-time invitation'
+                              : copiedInviteCode === invitation.inviteCode
+                              ? 'Copied to clipboard!'
+                              : 'Copy invitation link'
+                          }
+                        >
+                          {copiedInviteCode === invitation.inviteCode
+                            ? 'Copied!'
+                            : 'Copy Link'}
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeleteInvitation(invitation.inviteCode)
+                          }
+                          disabled={
+                            invitation.type === 'one-time' &&
+                            invitation.usesLeft === 0
+                          }
+                          className={`px-3 py-1 text-white text-sm rounded transition-colors ${
+                            invitation.type === 'one-time' &&
+                            invitation.usesLeft === 0
+                              ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                              : 'bg-red-600 hover:bg-red-500'
+                          }`}
+                          title={
+                            invitation.type === 'one-time' &&
+                            invitation.usesLeft === 0
+                              ? 'Cannot delete redeemed one-time invitation'
+                              : 'Delete invitation'
+                          }
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>

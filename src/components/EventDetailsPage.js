@@ -995,43 +995,48 @@ function EventDetailsPage({
                     Recent Invitations
                   </h3>
                   <div className="space-y-2">
-                    {invitations.slice(0, 5).map((invitation) => (
-                      <div
-                        key={invitation.inviteCode}
-                        className="flex items-center justify-between bg-gray-600 rounded-lg p-3"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <span className="font-mono text-sm text-blue-400">
-                            {invitation.inviteCode}
-                          </span>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              invitation.type === 'one-time'
-                                ? invitation.usesLeft > 0
-                                  ? 'bg-orange-900 text-orange-300'
-                                  : 'bg-gray-800 text-gray-400'
-                                : 'bg-green-900 text-green-300'
-                            }`}
-                          >
-                            {invitation.type === 'one-time'
-                              ? invitation.usesLeft > 0
-                                ? 'One-time'
-                                : 'Redeemed'
-                              : 'Generic'}
-                          </span>
-                          {invitation.description && (
-                            <span className="text-sm text-gray-400">
-                              {invitation.description}
+                    {invitations
+                      .sort(
+                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                      )
+                      .slice(0, 5)
+                      .map((invitation) => (
+                        <div
+                          key={invitation.inviteCode}
+                          className="flex items-center justify-between bg-gray-600 rounded-lg p-3"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <span className="font-mono text-sm text-blue-400">
+                              {invitation.inviteCode}
                             </span>
-                          )}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                invitation.type === 'one-time'
+                                  ? invitation.usesLeft > 0
+                                    ? 'bg-orange-900 text-orange-300'
+                                    : 'bg-gray-800 text-gray-400'
+                                  : 'bg-green-900 text-green-300'
+                              }`}
+                            >
+                              {invitation.type === 'one-time'
+                                ? invitation.usesLeft > 0
+                                  ? 'One-time'
+                                  : 'Redeemed'
+                                : 'Generic'}
+                            </span>
+                            {invitation.description && (
+                              <span className="text-sm text-gray-400">
+                                {invitation.description}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(invitation.createdAt).toLocaleDateString(
+                              'en-GB'
+                            )}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(invitation.createdAt).toLocaleDateString(
-                            'en-GB'
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               </div>
