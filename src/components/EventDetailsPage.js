@@ -525,7 +525,7 @@ function EventDetailsPage({
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Event Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">
@@ -603,69 +603,53 @@ function EventDetailsPage({
           {/* Tab Content */}
           <div className="p-6">
             {activeTab === 'event' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Event Information */}
-                <div className="lg:col-span-2">
-                  <div className="bg-gray-700 rounded-lg p-6 mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-xl font-semibold text-white">
-                        Event Information
-                      </h2>
-                      {currentUser &&
-                        event.createdBy === currentUser.userId && (
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => onEditEvent(event)}
-                              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm"
-                            >
-                              Edit Event
-                            </button>
-                            <button
-                              onClick={() => onDeleteEvent(event)}
-                              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors text-sm"
-                            >
-                              Delete Event
-                            </button>
-                          </div>
-                        )}
-                    </div>
-
-                    {event.description && (
-                      <div className="mb-6">
-                        <h3 className="text-sm font-medium text-gray-400 mb-2">
-                          Description
-                        </h3>
-                        <p className="text-gray-300">{event.description}</p>
+              <div className="max-w-6xl mx-auto">
+                <div className="space-y-6">
+                  {/* Main Event Information */}
+                  <div>
+                    <div className="bg-gray-700 rounded-lg p-6 mb-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-semibold text-white">
+                          Event Information
+                        </h2>
+                        {currentUser &&
+                          event.createdBy === currentUser.userId && (
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => onEditEvent(event)}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm"
+                              >
+                                Edit Event
+                              </button>
+                              <button
+                                onClick={() => onDeleteEvent(event)}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors text-sm"
+                              >
+                                Delete Event
+                              </button>
+                            </div>
+                          )}
                       </div>
-                    )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-400 mb-2">
-                          Event Schedule
-                        </h3>
-                        <div className="space-y-2">
-                          {(() => {
-                            const eventTimes = formatEventStartEnd(event);
-                            return (
-                              <>
-                                <div className="flex items-center text-gray-300">
-                                  <svg
-                                    className="h-4 w-4 mr-2"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                    />
-                                  </svg>
-                                  <span>{eventTimes.start}</span>
-                                </div>
-                                {eventTimes.isMultiDay && (
+                      {event.description && (
+                        <div className="mb-6">
+                          <h3 className="text-sm font-medium text-gray-400 mb-2">
+                            Description
+                          </h3>
+                          <p className="text-gray-300">{event.description}</p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-400 mb-2">
+                            Event Schedule
+                          </h3>
+                          <div className="space-y-2">
+                            {(() => {
+                              const eventTimes = formatEventStartEnd(event);
+                              return (
+                                <>
                                   <div className="flex items-center text-gray-300">
                                     <svg
                                       className="h-4 w-4 mr-2"
@@ -680,22 +664,154 @@ function EventDetailsPage({
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                       />
                                     </svg>
-                                    <span>{eventTimes.end}</span>
+                                    <span>{eventTimes.start}</span>
                                   </div>
-                                )}
-                              </>
-                            );
-                          })()}
+                                  {eventTimes.isMultiDay && (
+                                    <div className="flex items-center text-gray-300">
+                                      <svg
+                                        className="h-4 w-4 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                        />
+                                      </svg>
+                                      <span>{eventTimes.end}</span>
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-400 mb-2">
+                            Participants
+                          </h3>
+                          <div className="flex items-center text-gray-300">
+                            <svg
+                              className="h-4 w-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                              />
+                            </svg>
+                            <span>
+                              {participantCount} /{' '}
+                              {event.maxParticipants || '∞'} participants
+                            </span>
+                          </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-400 mb-2">
-                          Participants
-                        </h3>
-                        <div className="flex items-center text-gray-300">
+                    {/* Venue Information */}
+                    {venue ? (
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Venue Information Card */}
+                        <div className="flex-1 bg-gray-700 rounded-lg p-6">
+                          <h2 className="text-xl font-semibold text-white mb-4">
+                            Venue Information
+                          </h2>
+
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-white mb-2">
+                                {venue.venueName}
+                              </h3>
+                              {venue.description && (
+                                <p className="text-gray-300 mb-4">
+                                  {venue.description}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {venue.address && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-400 mb-1">
+                                    Address
+                                  </h4>
+                                  <p className="text-gray-300">
+                                    {venue.address}
+                                  </p>
+                                </div>
+                              )}
+
+                              {venue.contactPhone && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-400 mb-1">
+                                    Phone
+                                  </h4>
+                                  <p className="text-gray-300">
+                                    {venue.contactPhone}
+                                  </p>
+                                </div>
+                              )}
+
+                              {venue.websiteURL && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-400 mb-1">
+                                    Website
+                                  </h4>
+                                  <a
+                                    href={venue.websiteURL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300"
+                                  >
+                                    Visit Website
+                                  </a>
+                                </div>
+                              )}
+
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-400 mb-1">
+                                  Capacity
+                                </h4>
+                                <p className="text-gray-300">
+                                  {venue.capacity} people (calculated from
+                                  rooms)
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Venue Image - Outside the card */}
+                        {venue.imageUrl && venueImageUrl && (
+                          <div className="lg:w-80 lg:flex-shrink-0">
+                            <img
+                              src={venueImageUrl}
+                              alt={`${venue.venueName} venue`}
+                              className="w-full h-64 lg:h-80 object-cover rounded-lg border border-gray-600 bg-gray-800"
+                              onError={(e) => {
+                                console.log(
+                                  'Venue image failed to load:',
+                                  e.target.src
+                                );
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500 mb-2">
                           <svg
-                            className="h-4 w-4 mr-2"
+                            className="h-12 w-12 mx-auto"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -703,105 +819,149 @@ function EventDetailsPage({
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                              strokeWidth={1}
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                             />
                           </svg>
-                          <span>
-                            {participantCount} / {event.maxParticipants || '∞'}{' '}
-                            participants
-                          </span>
                         </div>
+                        <p className="text-gray-400 text-sm">
+                          {event.venueId
+                            ? 'Venue details not available'
+                            : 'No venue assigned'}
+                        </p>
                       </div>
-                    </div>
+                    )}
                   </div>
+                </div>
+              </div>
+            )}
 
-                  {/* Venue Information */}
-                  {venue ? (
-                    <div className="flex flex-col lg:flex-row gap-6">
-                      {/* Venue Information Card */}
-                      <div className="flex-1 bg-gray-700 rounded-lg p-6">
-                        <h2 className="text-xl font-semibold text-white mb-4">
-                          Venue Information
-                        </h2>
-
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-white mb-2">
-                              {venue.venueName}
-                            </h3>
-                            {venue.description && (
-                              <p className="text-gray-300 mb-4">
-                                {venue.description}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {venue.address && (
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-400 mb-1">
-                                  Address
-                                </h4>
-                                <p className="text-gray-300">{venue.address}</p>
+            {activeTab === 'rooms' && (
+              <div className="max-w-6xl mx-auto">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold text-white">
+                      Assigned Rooms & Availability
+                    </h2>
+                    {currentUser && event.createdBy === currentUser.userId && (
+                      <button
+                        onClick={() => onManageRooms(event)}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors text-sm"
+                      >
+                        Manage Rooms
+                      </button>
+                    )}
+                  </div>
+                  {eventRooms.length > 0 ? (
+                    <div className="space-y-4">
+                      {eventRooms.map((room) => (
+                        <div
+                          key={room.roomId}
+                          className="bg-gray-700 rounded-lg p-4 border border-gray-600"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h3 className="text-lg font-medium text-white">
+                                  {room.roomName}
+                                </h3>
+                                {room.capacity && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700">
+                                    {room.capacity} 👥
+                                  </span>
+                                )}
                               </div>
-                            )}
 
-                            {venue.contactPhone && (
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-400 mb-1">
-                                  Phone
-                                </h4>
-                                <p className="text-gray-300">
-                                  {venue.contactPhone}
+                              {room.description && (
+                                <p className="text-gray-300 text-sm mb-3">
+                                  {room.description}
                                 </p>
-                              </div>
-                            )}
+                              )}
 
-                            {venue.websiteURL && (
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-400 mb-1">
-                                  Website
-                                </h4>
-                                <a
-                                  href={venue.websiteURL}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-400 hover:text-blue-300"
-                                >
-                                  Visit Website
-                                </a>
-                              </div>
-                            )}
+                              {/* Available Times */}
+                              {room.availableTimes &&
+                                room.availableTimes.length > 0 && (
+                                  <div>
+                                    <h4 className="text-sm font-medium text-gray-400 mb-2">
+                                      Available Times:
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                      {room.availableTimes.map(
+                                        (time, index) => {
+                                          // Format the date for display
+                                          const formatDateForDisplay = (
+                                            dateString
+                                          ) => {
+                                            try {
+                                              const date = new Date(dateString);
+                                              const dayName =
+                                                date.toLocaleDateString(
+                                                  'en-GB',
+                                                  {
+                                                    weekday: 'long',
+                                                  }
+                                                );
+                                              const dayNumber = date.getDate();
+                                              const monthName =
+                                                date.toLocaleDateString(
+                                                  'en-GB',
+                                                  {
+                                                    month: 'short',
+                                                  }
+                                                );
+                                              const year = date.getFullYear();
 
-                            <div>
-                              <h4 className="text-sm font-medium text-gray-400 mb-1">
-                                Capacity
-                              </h4>
-                              <p className="text-gray-300">
-                                {venue.capacity} people (calculated from rooms)
-                              </p>
+                                              const getOrdinalSuffix = (
+                                                day
+                                              ) => {
+                                                if (day >= 11 && day <= 13)
+                                                  return 'th';
+                                                switch (day % 10) {
+                                                  case 1:
+                                                    return 'st';
+                                                  case 2:
+                                                    return 'nd';
+                                                  case 3:
+                                                    return 'rd';
+                                                  default:
+                                                    return 'th';
+                                                }
+                                              };
+
+                                              return `${dayName}, ${dayNumber}${getOrdinalSuffix(
+                                                dayNumber
+                                              )} ${monthName} ${year}`;
+                                            } catch (error) {
+                                              // Fallback to original format if date parsing fails
+                                              return (
+                                                time.dayOfWeek
+                                                  .charAt(0)
+                                                  .toUpperCase() +
+                                                time.dayOfWeek.slice(1)
+                                              );
+                                            }
+                                          };
+
+                                          return (
+                                            <span
+                                              key={index}
+                                              className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-green-900 text-green-200 border border-green-700"
+                                            >
+                                              {formatDateForDisplay(
+                                                time.dayOfWeek
+                                              )}{' '}
+                                              {time.startTime}-{time.endTime}
+                                            </span>
+                                          );
+                                        }
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Venue Image - Outside the card */}
-                      {venue.imageUrl && venueImageUrl && (
-                        <div className="lg:w-80 lg:flex-shrink-0">
-                          <img
-                            src={venueImageUrl}
-                            alt={`${venue.venueName} venue`}
-                            className="w-full h-64 lg:h-80 object-cover rounded-lg border border-gray-600 bg-gray-800"
-                            onError={(e) => {
-                              console.log(
-                                'Venue image failed to load:',
-                                e.target.src
-                              );
-                            }}
-                          />
-                        </div>
-                      )}
+                      ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
@@ -821,341 +981,209 @@ function EventDetailsPage({
                         </svg>
                       </div>
                       <p className="text-gray-400 text-sm">
-                        {event.venueId
-                          ? 'Venue details not available'
-                          : 'No venue assigned'}
+                        No rooms assigned to this event yet
                       </p>
                     </div>
                   )}
                 </div>
-
-                {/* Right Sidebar - Empty for event tab */}
-                <div className="lg:col-span-1"></div>
-              </div>
-            )}
-
-            {activeTab === 'rooms' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-white">
-                    Assigned Rooms & Availability
-                  </h2>
-                  {currentUser && event.createdBy === currentUser.userId && (
-                    <button
-                      onClick={() => onManageRooms(event)}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors text-sm"
-                    >
-                      Manage Rooms
-                    </button>
-                  )}
-                </div>
-                {eventRooms.length > 0 ? (
-                  <div className="space-y-4">
-                    {eventRooms.map((room) => (
-                      <div
-                        key={room.roomId}
-                        className="bg-gray-700 rounded-lg p-4 border border-gray-600"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-2">
-                              <h3 className="text-lg font-medium text-white">
-                                {room.roomName}
-                              </h3>
-                              {room.capacity && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700">
-                                  {room.capacity} 👥
-                                </span>
-                              )}
-                            </div>
-
-                            {room.description && (
-                              <p className="text-gray-300 text-sm mb-3">
-                                {room.description}
-                              </p>
-                            )}
-
-                            {/* Available Times */}
-                            {room.availableTimes &&
-                              room.availableTimes.length > 0 && (
-                                <div>
-                                  <h4 className="text-sm font-medium text-gray-400 mb-2">
-                                    Available Times:
-                                  </h4>
-                                  <div className="flex flex-wrap gap-2">
-                                    {room.availableTimes.map((time, index) => {
-                                      // Format the date for display
-                                      const formatDateForDisplay = (
-                                        dateString
-                                      ) => {
-                                        try {
-                                          const date = new Date(dateString);
-                                          const dayName =
-                                            date.toLocaleDateString('en-GB', {
-                                              weekday: 'long',
-                                            });
-                                          const dayNumber = date.getDate();
-                                          const monthName =
-                                            date.toLocaleDateString('en-GB', {
-                                              month: 'short',
-                                            });
-                                          const year = date.getFullYear();
-
-                                          const getOrdinalSuffix = (day) => {
-                                            if (day >= 11 && day <= 13)
-                                              return 'th';
-                                            switch (day % 10) {
-                                              case 1:
-                                                return 'st';
-                                              case 2:
-                                                return 'nd';
-                                              case 3:
-                                                return 'rd';
-                                              default:
-                                                return 'th';
-                                            }
-                                          };
-
-                                          return `${dayName}, ${dayNumber}${getOrdinalSuffix(
-                                            dayNumber
-                                          )} ${monthName} ${year}`;
-                                        } catch (error) {
-                                          // Fallback to original format if date parsing fails
-                                          return (
-                                            time.dayOfWeek
-                                              .charAt(0)
-                                              .toUpperCase() +
-                                            time.dayOfWeek.slice(1)
-                                          );
-                                        }
-                                      };
-
-                                      return (
-                                        <span
-                                          key={index}
-                                          className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-green-900 text-green-200 border border-green-700"
-                                        >
-                                          {formatDateForDisplay(time.dayOfWeek)}{' '}
-                                          {time.startTime}-{time.endTime}
-                                        </span>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-gray-500 mb-2">
-                      <svg
-                        className="h-12 w-12 mx-auto"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1}
-                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-gray-400 text-sm">
-                      No rooms assigned to this event yet
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
             {activeTab === 'invites' && (
-              <div className="space-y-6">
-                {/* Invitation Summary */}
-                <div className="bg-gray-700 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold text-white">
-                      Invitation Summary
-                    </h2>
-                    {currentUser && event.createdBy === currentUser.userId && (
-                      <button
-                        onClick={() => onManageInvites(event)}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm"
-                      >
-                        Manage Invites
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-400">
-                        {invitations.length}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        Total Invitations
-                      </div>
+              <div className="max-w-6xl mx-auto">
+                <div className="space-y-6">
+                  {/* Invitation Summary */}
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-white">
+                        Invitation Summary
+                      </h2>
+                      {currentUser &&
+                        event.createdBy === currentUser.userId && (
+                          <button
+                            onClick={() => onManageInvites(event)}
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm"
+                          >
+                            Manage Invites
+                          </button>
+                        )}
                     </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-400">
-                        {invitations.filter((inv) => inv.usesLeft === 0).length}
-                      </div>
-                      <div className="text-sm text-gray-400">Redeemed</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-orange-400">
-                        {invitations.filter((inv) => inv.usesLeft > 0).length}
-                      </div>
-                      <div className="text-sm text-gray-400">Unclaimed</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recent Invitations */}
-                <div className="bg-gray-700 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Recent Invitations
-                  </h3>
-                  <div className="space-y-2">
-                    {invitations
-                      .sort(
-                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-                      )
-                      .slice(0, 5)
-                      .map((invitation) => (
-                        <div
-                          key={invitation.inviteCode}
-                          className="flex items-center justify-between bg-gray-600 rounded-lg p-3"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <span className="font-mono text-sm text-blue-400">
-                              {invitation.inviteCode}
-                            </span>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                invitation.type === 'one-time'
-                                  ? invitation.usesLeft > 0
-                                    ? 'bg-orange-900 text-orange-300'
-                                    : 'bg-gray-800 text-gray-400'
-                                  : 'bg-green-900 text-green-300'
-                              }`}
-                            >
-                              {invitation.type === 'one-time'
-                                ? invitation.usesLeft > 0
-                                  ? 'One-time'
-                                  : 'Redeemed'
-                                : 'Generic'}
-                            </span>
-                            {invitation.description && (
-                              <span className="text-sm text-gray-400">
-                                {invitation.description}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(invitation.createdAt).toLocaleDateString(
-                              'en-GB'
-                            )}
-                          </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-blue-400">
+                          {invitations.length}
                         </div>
-                      ))}
+                        <div className="text-sm text-gray-400">
+                          Total Invitations
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-green-400">
+                          {
+                            invitations.filter((inv) => inv.usesLeft === 0)
+                              .length
+                          }
+                        </div>
+                        <div className="text-sm text-gray-400">Redeemed</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-orange-400">
+                          {invitations.filter((inv) => inv.usesLeft > 0).length}
+                        </div>
+                        <div className="text-sm text-gray-400">Unclaimed</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recent Invitations */}
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">
+                      Recent Invitations
+                    </h3>
+                    <div className="space-y-2">
+                      {invitations
+                        .sort(
+                          (a, b) =>
+                            new Date(b.createdAt) - new Date(a.createdAt)
+                        )
+                        .slice(0, 5)
+                        .map((invitation) => (
+                          <div
+                            key={invitation.inviteCode}
+                            className="flex items-center justify-between bg-gray-600 rounded-lg p-3"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <span className="font-mono text-sm text-blue-400">
+                                {invitation.inviteCode}
+                              </span>
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  invitation.type === 'one-time'
+                                    ? invitation.usesLeft > 0
+                                      ? 'bg-orange-900 text-orange-300'
+                                      : 'bg-gray-800 text-gray-400'
+                                    : 'bg-green-900 text-green-300'
+                                }`}
+                              >
+                                {invitation.type === 'one-time'
+                                  ? invitation.usesLeft > 0
+                                    ? 'One-time'
+                                    : 'Redeemed'
+                                  : 'Generic'}
+                              </span>
+                              {invitation.description && (
+                                <span className="text-sm text-gray-400">
+                                  {invitation.description}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(
+                                invitation.createdAt
+                              ).toLocaleDateString('en-GB')}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'attendees' && (
-              <div className="space-y-6">
-                {/* Attendees Summary */}
-                <div className="bg-gray-700 rounded-lg p-6">
-                  <h2 className="text-xl font-semibold text-white mb-4">
-                    Event Attendees
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-400">
-                        {participants.length}
+              <div className="max-w-6xl mx-auto">
+                <div className="space-y-6">
+                  {/* Attendees Summary */}
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <h2 className="text-xl font-semibold text-white mb-4">
+                      Event Attendees
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-blue-400">
+                          {participants.length}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          Total Attendees
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-400">
-                        Total Attendees
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-green-400">
+                          {event?.maxParticipants || '∞'}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          Max Capacity
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-400">
-                        {event?.maxParticipants || '∞'}
-                      </div>
-                      <div className="text-sm text-gray-400">Max Capacity</div>
                     </div>
                   </div>
-                </div>
 
-                {/* Attendees List */}
-                <div className="bg-gray-700 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Attendee List
-                  </h3>
-                  {participants.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">No attendees yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {participants
-                        .sort(
-                          (a, b) => new Date(b.joinedAt) - new Date(a.joinedAt)
-                        )
-                        .map((participant, index) => (
-                          <div
-                            key={participant.userId}
-                            className="flex items-center justify-between bg-gray-600 rounded-lg p-4"
-                          >
-                            <div className="flex items-center space-x-4">
-                              <div className="flex-shrink-0">
-                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                                  <span className="text-white font-semibold text-sm">
-                                    {participant.userName
-                                      ?.charAt(0)
-                                      ?.toUpperCase() || '?'}
-                                  </span>
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-white font-medium">
-                                  {participant.userName || 'Unknown User'}
-                                </div>
-                                <div className="text-gray-400 text-sm">
-                                  {participant.userEmail}
-                                </div>
-                                {participant.inviteCode && (
-                                  <div className="text-gray-500 text-xs">
-                                    Joined via: {participant.inviteCode}
+                  {/* Attendees List */}
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">
+                      Attendee List
+                    </h3>
+                    {participants.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-400">No attendees yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {participants
+                          .sort(
+                            (a, b) =>
+                              new Date(b.joinedAt) - new Date(a.joinedAt)
+                          )
+                          .map((participant, index) => (
+                            <div
+                              key={participant.userId}
+                              className="flex items-center justify-between bg-gray-600 rounded-lg p-4"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="flex-shrink-0">
+                                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-semibold text-sm">
+                                      {participant.userName
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || '?'}
+                                    </span>
                                   </div>
-                                )}
+                                </div>
+                                <div>
+                                  <div className="text-white font-medium">
+                                    {participant.userName || 'Unknown User'}
+                                  </div>
+                                  <div className="text-gray-400 text-sm">
+                                    {participant.userEmail}
+                                  </div>
+                                  {participant.inviteCode && (
+                                    <div className="text-gray-500 text-xs">
+                                      Joined via: {participant.inviteCode}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-gray-400 text-sm">
+                                  Joined{' '}
+                                  {new Date(
+                                    participant.joinedAt
+                                  ).toLocaleDateString('en-GB')}
+                                </div>
+                                <div className="text-gray-500 text-xs">
+                                  {new Date(
+                                    participant.joinedAt
+                                  ).toLocaleTimeString('en-GB', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="text-gray-400 text-sm">
-                                Joined{' '}
-                                {new Date(
-                                  participant.joinedAt
-                                ).toLocaleDateString('en-GB')}
-                              </div>
-                              <div className="text-gray-500 text-xs">
-                                {new Date(
-                                  participant.joinedAt
-                                ).toLocaleTimeString('en-GB', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                          ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
