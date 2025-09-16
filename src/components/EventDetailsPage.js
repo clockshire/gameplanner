@@ -30,6 +30,39 @@ function EventDetailsPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [venueImageUrl, setVenueImageUrl] = useState(null);
+
+  /**
+   * Generate presigned URL for venue image display
+   */
+  const generateVenueImageUrl = async (imageUrl) => {
+    if (!imageUrl || !sessionToken) return null;
+
+    try {
+      // Extract the key from the MinIO URL
+      const url = new URL(imageUrl);
+      const pathParts = url.pathname.substring(1).split('/'); // Remove leading slash and split
+      const key = pathParts.slice(1).join('/'); // Remove bucket name, keep only object key
+
+      const response = await fetch(
+        `http://localhost:3001/api/images/presigned/${encodeURIComponent(
+          key
+        )}?expiresIn=3600`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+      return result.success ? result.data.url : null;
+    } catch (err) {
+      console.error('Error generating presigned URL for venue image:', err);
+      return null;
+    }
+  };
 
   /**
    * Get tab from URL hash or default to 'event'
@@ -184,6 +217,11 @@ function EventDetailsPage({
 
       if (data.success) {
         setVenue(data.data);
+        // Generate presigned URL for venue image if available
+        if (data.data.imageUrl) {
+          const presignedUrl = await generateVenueImageUrl(data.data.imageUrl);
+          setVenueImageUrl(presignedUrl);
+        }
       } else {
         console.warn('Failed to fetch venue details:', data.message);
       }
@@ -681,64 +719,86 @@ function EventDetailsPage({
                       <h2 className="text-xl font-semibold text-white mb-4">
                         Venue Information
                       </h2>
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-2">
-                            {venue.venueName}
-                          </h3>
-                          {venue.description && (
-                            <p className="text-gray-300 mb-4">
-                              {venue.description}
-                            </p>
-                          )}
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {venue.address && (
+                      {/* Responsive layout: venue details on left, image on right */}
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        {/* Venue Details */}
+                        <div className="flex-1 space-y-4">
+                          <div>
+                            <h3 className="text-lg font-semibold text-white mb-2">
+                              {venue.venueName}
+                            </h3>
+                            {venue.description && (
+                              <p className="text-gray-300 mb-4">
+                                {venue.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {venue.address && (
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-400 mb-1">
+                                  Address
+                                </h4>
+                                <p className="text-gray-300">{venue.address}</p>
+                              </div>
+                            )}
+
+                            {venue.contactPhone && (
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-400 mb-1">
+                                  Phone
+                                </h4>
+                                <p className="text-gray-300">
+                                  {venue.contactPhone}
+                                </p>
+                              </div>
+                            )}
+
+                            {venue.websiteURL && (
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-400 mb-1">
+                                  Website
+                                </h4>
+                                <a
+                                  href={venue.websiteURL}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 hover:text-blue-300"
+                                >
+                                  Visit Website
+                                </a>
+                              </div>
+                            )}
+
                             <div>
                               <h4 className="text-sm font-medium text-gray-400 mb-1">
-                                Address
-                              </h4>
-                              <p className="text-gray-300">{venue.address}</p>
-                            </div>
-                          )}
-
-                          {venue.contactPhone && (
-                            <div>
-                              <h4 className="text-sm font-medium text-gray-400 mb-1">
-                                Phone
+                                Capacity
                               </h4>
                               <p className="text-gray-300">
-                                {venue.contactPhone}
+                                {venue.capacity} people (calculated from rooms)
                               </p>
                             </div>
-                          )}
-
-                          {venue.websiteURL && (
-                            <div>
-                              <h4 className="text-sm font-medium text-gray-400 mb-1">
-                                Website
-                              </h4>
-                              <a
-                                href={venue.websiteURL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-300"
-                              >
-                                Visit Website
-                              </a>
-                            </div>
-                          )}
-
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-400 mb-1">
-                              Capacity
-                            </h4>
-                            <p className="text-gray-300">
-                              {venue.capacity} people (calculated from rooms)
-                            </p>
                           </div>
                         </div>
+
+                        {/* Venue Image */}
+                        {venue.imageUrl && venueImageUrl && (
+                          <div className="lg:w-80 lg:flex-shrink-0">
+                            <img
+                              src={venueImageUrl}
+                              alt={`${venue.venueName} venue`}
+                              className="w-full h-64 lg:h-80 object-cover rounded-lg border border-gray-600 bg-gray-800"
+                              onError={(e) => {
+                                console.log(
+                                  'Venue image failed to load:',
+                                  e.target.src
+                                );
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (

@@ -122,6 +122,7 @@ router.get('/:venueId/public', async (req, res) => {
         websiteURL: result.data.websiteURL,
         capacity: result.data.capacity,
         mapLink: result.data.mapLink,
+        imageUrl: result.data.imageUrl,
         createdBy: result.data.createdBy,
         createdAt: result.data.createdAt,
         updatedAt: result.data.updatedAt,
