@@ -99,11 +99,21 @@ function EventDetailsPage({
    * Fetch invitations for the event
    */
   const fetchInvitations = async (eventIdToFetch = eventId) => {
-    if (!eventIdToFetch || !sessionToken) return;
+    // Clean the eventId to remove any tab hash
+    const cleanEventId = eventIdToFetch
+      ? eventIdToFetch.split('#')[0]
+      : eventId?.split('#')[0];
+    console.log(
+      'fetchInvitations - cleanEventId:',
+      cleanEventId,
+      'sessionToken:',
+      !!sessionToken
+    );
+    if (!cleanEventId || !sessionToken) return;
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/invitations/event/${eventIdToFetch}`,
+        `http://localhost:3001/api/invitations/event/${cleanEventId}`,
         {
           headers: {
             Authorization: `Bearer ${sessionToken}`,
@@ -362,6 +372,10 @@ function EventDetailsPage({
       event.createdBy === currentUser.userId
     ) {
       const cleanEventId = eventId.split('#')[0];
+      console.log(
+        'useEffect - fetching invitations for cleanEventId:',
+        cleanEventId
+      );
       fetchInvitations(cleanEventId);
     }
   }, [eventId, currentUser, event]);
