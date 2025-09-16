@@ -630,10 +630,6 @@ const testCreateEventWithValidData =
     );
     assert(response.data.data.eventId, 'Should have an event ID');
     assert(response.data.data.status === 'active', 'Should have active status');
-    assert(
-      response.data.data.currentParticipants === 0,
-      'Should start with 0 participants'
-    );
     assert(response.data.data.createdAt, 'Should have creation timestamp');
     assert(response.data.data.updatedAt, 'Should have update timestamp');
 

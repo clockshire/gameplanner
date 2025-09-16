@@ -47,7 +47,6 @@ class EventService {
         endTime: eventData.endTime || '',
         venueId: eventData.venueId || null,
         maxParticipants: eventData.maxParticipants || 0,
-        currentParticipants: 1, // Creator is automatically a participant
         status: 'active',
         createdBy: eventData.createdBy || null, // User ID who created the event
         creatorName: eventData.creatorName || 'Unknown', // Creator's name
