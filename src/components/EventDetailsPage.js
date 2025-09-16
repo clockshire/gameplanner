@@ -25,6 +25,7 @@ function EventDetailsPage({
   const [creator, setCreator] = useState(null);
   const [eventRooms, setEventRooms] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [participantCount, setParticipantCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,7 +47,7 @@ function EventDetailsPage({
     }
 
     console.log('getTabFromHash - Extracted tab:', tab);
-    if (tab && ['event', 'rooms', 'invites'].includes(tab)) {
+    if (tab && ['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
       console.log('getTabFromHash - Valid tab found:', tab);
       return tab;
     }
@@ -74,9 +75,9 @@ function EventDetailsPage({
   };
 
   /**
-   * Fetch participant count for the event
+   * Fetch participants for the event
    */
-  const fetchParticipantCount = async (eventIdToFetch = eventId) => {
+  const fetchParticipants = async (eventIdToFetch = eventId) => {
     if (!eventIdToFetch) return;
 
     try {
@@ -87,11 +88,12 @@ function EventDetailsPage({
       const data = await response.json();
 
       if (data.success) {
-        const count = data.data ? data.data.length : 0;
-        setParticipantCount(count);
+        const participantsData = data.data || [];
+        setParticipants(participantsData);
+        setParticipantCount(participantsData.length);
       }
     } catch (err) {
-      console.error('Error fetching participant count:', err);
+      console.error('Error fetching participants:', err);
     }
   };
 
@@ -363,7 +365,7 @@ function EventDetailsPage({
 
       // Always fetch event details (public endpoint)
       fetchEventDetails(cleanEventId);
-      fetchParticipantCount(cleanEventId);
+      fetchParticipants(cleanEventId);
     }
   }, [eventId]);
 
@@ -585,6 +587,16 @@ function EventDetailsPage({
                   Invites
                 </button>
               )}
+              <button
+                onClick={() => handleTabChange('attendees')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'attendees'
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+                }`}
+              >
+                Attendees
+              </button>
             </nav>
           </div>
 
@@ -1038,6 +1050,99 @@ function EventDetailsPage({
                         </div>
                       ))}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'attendees' && (
+              <div className="space-y-6">
+                {/* Attendees Summary */}
+                <div className="bg-gray-700 rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-white mb-4">
+                    Event Attendees
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-400">
+                        {participants.length}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        Total Attendees
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-400">
+                        {event?.maxParticipants || '∞'}
+                      </div>
+                      <div className="text-sm text-gray-400">Max Capacity</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Attendees List */}
+                <div className="bg-gray-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    Attendee List
+                  </h3>
+                  {participants.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">No attendees yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {participants
+                        .sort(
+                          (a, b) => new Date(a.joinedAt) - new Date(b.joinedAt)
+                        )
+                        .map((participant, index) => (
+                          <div
+                            key={participant.userId}
+                            className="flex items-center justify-between bg-gray-600 rounded-lg p-4"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-semibold text-sm">
+                                    {participant.userName
+                                      ?.charAt(0)
+                                      ?.toUpperCase() || '?'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-white font-medium">
+                                  {participant.userName || 'Unknown User'}
+                                </div>
+                                <div className="text-gray-400 text-sm">
+                                  {participant.userEmail}
+                                </div>
+                                {participant.inviteCode && (
+                                  <div className="text-gray-500 text-xs">
+                                    Joined via: {participant.inviteCode}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-gray-400 text-sm">
+                                Joined{' '}
+                                {new Date(
+                                  participant.joinedAt
+                                ).toLocaleDateString('en-GB')}
+                              </div>
+                              <div className="text-gray-500 text-xs">
+                                {new Date(
+                                  participant.joinedAt
+                                ).toLocaleTimeString('en-GB', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
