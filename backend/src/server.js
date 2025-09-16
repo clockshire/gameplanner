@@ -14,6 +14,7 @@ const roomRoutes = require('./routes/rooms');
 const eventRoomRoutes = require('./routes/eventRooms');
 const invitationRoutes = require('./routes/invitations');
 const eventParticipantRoutes = require('./routes/eventParticipants');
+const imageRoutes = require('./routes/images');
 const { testConnection, createTableIfNotExists } = require('./dynamodb');
 const {
   usersTableSchema,
@@ -46,6 +47,7 @@ app.use('/api/events', eventRoomRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/event-participants', eventParticipantRoutes);
+app.use('/api/images', imageRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

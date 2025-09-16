@@ -242,6 +242,8 @@ function App() {
         setCurrentPage('events');
       } else if (hash === 'venues') {
         setCurrentPage('venues');
+      } else if (hash === 'image-upload') {
+        setCurrentPage('image-upload');
       } else if (hash.startsWith('login')) {
         setCurrentPage('login');
         // Parse redirect parameter
@@ -415,6 +417,16 @@ function App() {
               >
                 Games
               </button>
+              <button
+                onClick={() => handleNavigation('image-upload')}
+                className={`transition-colors ${
+                  currentPage === 'image-upload'
+                    ? 'text-white font-semibold'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Image Test
+              </button>
             </nav>
 
             {/* Authentication Section */}
@@ -472,6 +484,20 @@ function App() {
             onBack={handleBackFromEditVenue}
             onVenueUpdated={handleVenueUpdated}
           />
+        ) : currentPage === 'image-upload' ? (
+          <div className="min-h-screen bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-white mb-4">
+                  Image Upload Test
+                </h1>
+                <p className="text-gray-400">
+                  Test S3-compatible image upload functionality with MinIO
+                </p>
+              </div>
+              <ImageUpload />
+            </div>
+          </div>
         ) : currentPage === 'login' ? (
           <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">

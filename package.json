@@ -15,6 +15,8 @@
     "dynamodb:setup": "node backend/scripts/setup-local.js",
     "dynamodb:test": "node backend/scripts/test-operations.js",
     "dynamodb:status": "docker ps --filter name=dynamodb-local",
+    "minio:test": "node backend/scripts/test-minio.js",
+    "image-upload:test": "node backend/scripts/test-image-upload.js",
     "dynamodb:start": "make start-local-dynamodb",
     "dynamodb:stop": "make stop-local-dynamodb",
     "test:venue-deletion": "node src/tests/venue-deletion.test.js",
@@ -25,6 +27,7 @@
     "aws-sdk": "^2.1490.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
     "referral-codes": "^3.0.0",
     "uuid": "^13.0.0"
   },

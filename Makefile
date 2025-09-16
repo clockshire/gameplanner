@@ -6,6 +6,22 @@ start-local-dynamodb:
 stop-local-dynamodb:
 	@docker-compose down
 
+start-minio:
+	@docker-compose up -d minio
+	@echo "🚀 MinIO started at http://localhost:9000"
+	@echo "🔧 MinIO Console at http://localhost:9001"
+	@echo "📝 Credentials: minioadmin / minioadmin123"
+
+stop-minio:
+	@docker-compose stop minio
+
+start-all:
+	@docker-compose up -d --remove-orphans
+	@echo "🚀 All services started"
+	@echo "📊 DynamoDB: http://localhost:8000"
+	@echo "🗄️ MinIO: http://localhost:9000"
+	@echo "🔧 MinIO Console: http://localhost:9001"
+
 list-tables:
 	@aws dynamodb list-tables --endpoint-url http://localhost:8000 --region us-east-1 --query 'TableNames'
 
