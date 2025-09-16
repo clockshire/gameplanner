@@ -12,9 +12,45 @@ const { useState, useEffect } = React;
 function EventsPage({ onViewEventDetails, currentUser }) {
   const { sessionToken, loading: authLoading, isAuthenticated } = useAuth();
   const [events, setEvents] = useState([]);
+  const [participantCounts, setParticipantCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  /**
+   * Fetch participant count for a specific event
+   */
+  const fetchParticipantCount = async (eventId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/event-participants/event/${eventId}/public`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        const count = data.data ? data.data.length : 0;
+        setParticipantCounts((prev) => ({
+          ...prev,
+          [eventId]: count,
+        }));
+      }
+    } catch (err) {
+      console.error(
+        `Error fetching participant count for event ${eventId}:`,
+        err
+      );
+    }
+  };
+
+  /**
+   * Fetch participant counts for all events
+   */
+  const fetchAllParticipantCounts = async (eventsList) => {
+    const promises = eventsList.map((event) =>
+      fetchParticipantCount(event.eventId)
+    );
+    await Promise.all(promises);
+  };
 
   /**
    * Fetch events from the API
@@ -41,7 +77,10 @@ function EventsPage({ onViewEventDetails, currentUser }) {
       const data = await response.json();
 
       if (data.success) {
-        setEvents(data.data || []);
+        const eventsList = data.data || [];
+        setEvents(eventsList);
+        // Fetch participant counts for all events
+        await fetchAllParticipantCounts(eventsList);
       } else {
         setError(data.message || 'Failed to fetch events');
       }
@@ -386,7 +425,7 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                                   />
                                 </svg>
                                 <span>
-                                  {event.currentParticipants || 0} /{' '}
+                                  {participantCounts[event.eventId] || 0} /{' '}
                                   {event.maxParticipants} participants
                                 </span>
                               </div>
@@ -538,7 +577,7 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                                     />
                                   </svg>
                                   <span>
-                                    {event.currentParticipants || 0} /{' '}
+                                    {participantCounts[event.eventId] || 0} /{' '}
                                     {event.maxParticipants} participants
                                   </span>
                                 </div>
