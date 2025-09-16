@@ -563,8 +563,40 @@ function App() {
 function Dashboard({ user, onViewEventDetails }) {
   const { sessionToken } = useAuth();
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [participantCounts, setParticipantCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Fetch participant count for a specific event
+  const fetchParticipantCount = async (eventId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/event-participants/event/${eventId}/public`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        const count = data.data ? data.data.length : 0;
+        setParticipantCounts((prev) => ({
+          ...prev,
+          [eventId]: count,
+        }));
+      }
+    } catch (err) {
+      console.error(
+        `Error fetching participant count for event ${eventId}:`,
+        err
+      );
+    }
+  };
+
+  // Fetch participant counts for all events
+  const fetchAllParticipantCounts = async (eventsList) => {
+    const promises = eventsList.map((event) =>
+      fetchParticipantCount(event.eventId)
+    );
+    await Promise.all(promises);
+  };
 
   // Fetch upcoming events for the user
   const fetchUpcomingEvents = async () => {
@@ -597,6 +629,8 @@ function Dashboard({ user, onViewEventDetails }) {
         upcoming.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
 
         setUpcomingEvents(upcoming);
+        // Fetch participant counts for all upcoming events
+        await fetchAllParticipantCounts(upcoming);
       } else {
         setError(data.message || 'Failed to fetch events');
       }
@@ -781,7 +815,7 @@ function Dashboard({ user, onViewEventDetails }) {
                         />
                       </svg>
                       <span className="text-sm">
-                        {event.currentParticipants || 0} /{' '}
+                        {participantCounts[event.eventId] || 0} /{' '}
                         {event.maxParticipants} participants
                       </span>
                     </div>
