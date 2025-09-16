@@ -528,12 +528,6 @@ function EventDetailsPage({
                   Edit Event
                 </button>
                 <button
-                  onClick={() => onManageRooms(event)}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
-                >
-                  Manage Rooms
-                </button>
-                <button
                   onClick={() => onManageInvites(event)}
                   className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
                 >
@@ -814,9 +808,19 @@ function EventDetailsPage({
 
             {activeTab === 'rooms' && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-white mb-4">
-                  Assigned Rooms & Availability
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-white">
+                    Assigned Rooms & Availability
+                  </h2>
+                  {currentUser && event.createdBy === currentUser.userId && (
+                    <button
+                      onClick={() => onManageRooms(event)}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors text-sm"
+                    >
+                      Manage Rooms
+                    </button>
+                  )}
+                </div>
                 {console.log(
                   'Rendering rooms tab - eventRooms:',
                   eventRooms,
@@ -941,15 +945,9 @@ function EventDetailsPage({
                         />
                       </svg>
                     </div>
-                    <p className="text-gray-400 text-sm mb-4">
+                    <p className="text-gray-400 text-sm">
                       No rooms assigned to this event yet
                     </p>
-                    <button
-                      onClick={() => onManageRooms(event)}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors"
-                    >
-                      Manage Rooms
-                    </button>
                   </div>
                 )}
               </div>
