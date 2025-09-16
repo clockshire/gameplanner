@@ -174,15 +174,11 @@ function EventDetailsPage({
 
       if (data.success) {
         setEvent(data.data);
-        // If event has a venue, fetch venue details
-        if (data.data.venueId) {
-          await fetchVenueDetails(data.data.venueId);
-        }
         // If event has a creator, fetch creator details
         if (data.data.createdBy) {
           await fetchCreatorDetails(data.data.createdBy);
         }
-        // Event rooms will be fetched when currentUser becomes available
+        // Venue details and event rooms will be fetched when sessionToken becomes available
       } else {
         setError(data.message || 'Failed to load event details');
       }
@@ -377,6 +373,13 @@ function EventDetailsPage({
       fetchParticipants(cleanEventId);
     }
   }, [eventId]);
+
+  // Fetch venue details when sessionToken becomes available
+  useEffect(() => {
+    if (sessionToken && event && event.venueId) {
+      fetchVenueDetails(event.venueId);
+    }
+  }, [sessionToken, event]);
 
   useEffect(() => {
     if (
@@ -715,15 +718,14 @@ function EventDetailsPage({
 
                   {/* Venue Information */}
                   {venue ? (
-                    <div className="bg-gray-700 rounded-lg p-6">
-                      <h2 className="text-xl font-semibold text-white mb-4">
-                        Venue Information
-                      </h2>
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      {/* Venue Information Card */}
+                      <div className="flex-1 bg-gray-700 rounded-lg p-6">
+                        <h2 className="text-xl font-semibold text-white mb-4">
+                          Venue Information
+                        </h2>
 
-                      {/* Responsive layout: venue details on left, image on right */}
-                      <div className="flex flex-col lg:flex-row gap-6">
-                        {/* Venue Details */}
-                        <div className="flex-1 space-y-4">
+                        <div className="space-y-4">
                           <div>
                             <h3 className="text-lg font-semibold text-white mb-2">
                               {venue.venueName}
@@ -782,24 +784,24 @@ function EventDetailsPage({
                             </div>
                           </div>
                         </div>
-
-                        {/* Venue Image */}
-                        {venue.imageUrl && venueImageUrl && (
-                          <div className="lg:w-80 lg:flex-shrink-0">
-                            <img
-                              src={venueImageUrl}
-                              alt={`${venue.venueName} venue`}
-                              className="w-full h-64 lg:h-80 object-cover rounded-lg border border-gray-600 bg-gray-800"
-                              onError={(e) => {
-                                console.log(
-                                  'Venue image failed to load:',
-                                  e.target.src
-                                );
-                              }}
-                            />
-                          </div>
-                        )}
                       </div>
+
+                      {/* Venue Image - Outside the card */}
+                      {venue.imageUrl && venueImageUrl && (
+                        <div className="lg:w-80 lg:flex-shrink-0">
+                          <img
+                            src={venueImageUrl}
+                            alt={`${venue.venueName} venue`}
+                            className="w-full h-64 lg:h-80 object-cover rounded-lg border border-gray-600 bg-gray-800"
+                            onError={(e) => {
+                              console.log(
+                                'Venue image failed to load:',
+                                e.target.src
+                              );
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="text-center py-8">
