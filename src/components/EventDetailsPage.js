@@ -1092,7 +1092,7 @@ function EventDetailsPage({
                     <div className="space-y-3">
                       {participants
                         .sort(
-                          (a, b) => new Date(a.joinedAt) - new Date(b.joinedAt)
+                          (a, b) => new Date(b.joinedAt) - new Date(a.joinedAt)
                         )
                         .map((participant, index) => (
                           <div
