@@ -356,7 +356,7 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
                         <img
                           src={venueImageUrls[venue.venueId]}
                           alt={`${venue.venueName} venue`}
-                          className="w-full h-48 object-contain rounded-lg border border-gray-600 bg-gray-700"
+                          className="w-full h-48 object-cover rounded-lg border border-gray-600 bg-gray-700"
                           onError={(e) => {
                             console.log(
                               'Venue image failed to load:',
