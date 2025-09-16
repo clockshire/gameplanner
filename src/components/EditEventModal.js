@@ -16,6 +16,7 @@ function EditEventModal({
   onEventUpdated,
   currentUser,
 }) {
+  const { sessionToken } = useAuth();
   const [formData, setFormData] = useState({
     eventName: '',
     description: '',
@@ -37,7 +38,7 @@ function EditEventModal({
    * Initialize form data when event changes
    */
   useEffect(() => {
-    if (event) {
+    if (event && sessionToken) {
       setFormData({
         eventName: event.eventName || '',
         description: event.description || '',
@@ -50,24 +51,44 @@ function EditEventModal({
       });
       setSelectedVenueId(event.venueId || '');
       setSelectedRoomIds(event.assignedRoomIds || []);
+
+      // Fetch venues and rooms when event data is loaded
+      fetchVenues();
+      if (event.venueId) {
+        fetchRooms(event.venueId);
+      }
     }
-  }, [event]);
+  }, [event, sessionToken]);
 
   /**
    * Fetch venues for the dropdown
    */
   const fetchVenues = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/venues');
+      if (!sessionToken) {
+        console.warn('No session token available for fetching venues');
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${sessionToken}`,
+      };
+
+      const response = await fetch('http://localhost:3001/api/venues', {
+        headers,
+      });
       const data = await response.json();
 
       if (data.success) {
-        setVenues(data.data);
+        setVenues(data.data || []);
+        console.log('Venues fetched successfully:', data.data?.length || 0);
       } else {
         console.error('Failed to fetch venues:', data.message);
+        setError(`Failed to load venues: ${data.message}`);
       }
     } catch (err) {
       console.error('Error fetching venues:', err);
+      setError('Failed to load venues');
     }
   };
 
@@ -82,8 +103,14 @@ function EditEventModal({
     }
 
     try {
+      const headers = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
-        `http://localhost:3001/api/rooms/venue/${venueId}`
+        `http://localhost:3001/api/rooms/venue/${venueId}`,
+        { headers }
       );
       const data = await response.json();
 
@@ -103,10 +130,10 @@ function EditEventModal({
    * Load venues when modal opens
    */
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && sessionToken) {
       fetchVenues();
     }
-  }, [isOpen]);
+  }, [isOpen, sessionToken]);
 
   /**
    * Handle form input changes
@@ -178,13 +205,18 @@ function EditEventModal({
         createdBy: currentUser?.userId,
       };
 
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
       const response = await fetch(
         `http://localhost:3001/api/events/${event.eventId}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify(eventData),
         }
       );
@@ -195,6 +227,7 @@ function EditEventModal({
         onEventUpdated(data.data);
         onClose();
       } else {
+        console.error('Event update failed:', data);
         setError(data.message || 'Failed to update event');
       }
     } catch (err) {

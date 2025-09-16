@@ -213,7 +213,7 @@ function App() {
       if (hash.startsWith('invite/')) {
         const code = hash.split('/')[1];
         setInviteCode(code);
-        setCurrentPage('invite-redemption');
+        setCurrentPage(`invite/${code}`);
       } else if (hash.startsWith('event-details/')) {
         const eventId = hash.split('/')[1];
         setSelectedEventId(eventId);
@@ -375,7 +375,7 @@ function App() {
             onManageRooms={handleManageRooms}
             onManageInvites={handleManageInvites}
           />
-        ) : currentPage === 'invite-redemption' && inviteCode ? (
+        ) : currentPage.startsWith('invite/') && inviteCode ? (
           <InviteRedemptionPage
             inviteCode={inviteCode}
             onBack={() => setCurrentPage('home')}

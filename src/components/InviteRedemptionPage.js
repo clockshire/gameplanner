@@ -10,7 +10,7 @@ const { useState, useEffect } = React;
  * Shows invitation details and handles redemption
  */
 function InviteRedemptionPage({ inviteCode, onBack, onLoginWithRedirect }) {
-  const { sessionToken, isAuthenticated, user } = useAuth();
+  const { sessionToken, isAuthenticated } = useAuth();
   const [invitation, setInvitation] = useState(null);
   const [event, setEvent] = useState(null);
   const [venue, setVenue] = useState(null);
@@ -19,6 +19,93 @@ function InviteRedemptionPage({ inviteCode, onBack, onLoginWithRedirect }) {
   const [redeeming, setRedeeming] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  /**
+   * Format date for display
+   * @param {string} dateString - Date string
+   * @returns {string} Formatted date
+   */
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  /**
+   * Format time for display
+   * @param {string} time - Time string (HH:MM format)
+   * @returns {string} Formatted time
+   */
+  const formatTime = (time) => {
+    if (!time) return '';
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  /**
+   * Format event start and end with times for clear display
+   * @param {Object} event - Event object
+   * @returns {Object} Object with start and end formatted strings
+   */
+  const formatEventStartEnd = (event) => {
+    try {
+      const startDate = new Date(event.eventDate);
+      const endDate = new Date(event.endDate || event.eventDate);
+
+      const startFormatted = startDate.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      const endFormatted = endDate.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      const startTime = event.startTime ? formatTime(event.startTime) : '';
+      const endTime = event.endTime ? formatTime(event.endTime) : '';
+
+      const startText =
+        'Event Start: ' +
+        startFormatted +
+        (startTime ? ' at ' + startTime : '');
+      const endText =
+        'Event End: ' + endFormatted + (endTime ? ' at ' + endTime : '');
+
+      return {
+        start: startText,
+        end: endText,
+        isMultiDay: startDate.toDateString() !== endDate.toDateString(),
+      };
+    } catch (error) {
+      console.warn('Error formatting event dates:', error);
+      const startText =
+        'Event Start: ' +
+        formatDate(event.eventDate) +
+        (event.startTime ? ' at ' + formatTime(event.startTime) : '');
+      const endText =
+        'Event End: ' +
+        formatDate(event.eventDate) +
+        (event.endTime ? ' at ' + formatTime(event.endTime) : '');
+
+      return {
+        start: startText,
+        end: endText,
+        isMultiDay: false,
+      };
+    }
+  };
 
   /**
    * Fetch invitation details
@@ -432,15 +519,22 @@ function InviteRedemptionPage({ inviteCode, onBack, onLoginWithRedirect }) {
                       Event Schedule
                     </span>
                   </div>
-                  <div className="text-white text-lg">
-                    {event.eventDate
-                      ? new Date(event.eventDate).toLocaleDateString('en-GB', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })
-                      : 'Date TBD'}
+                  <div className="space-y-2">
+                    {(() => {
+                      const eventTimes = formatEventStartEnd(event);
+                      return (
+                        <>
+                          <div className="text-white text-lg">
+                            {eventTimes.start}
+                          </div>
+                          {eventTimes.isMultiDay && (
+                            <div className="text-white text-lg">
+                              {eventTimes.end}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
