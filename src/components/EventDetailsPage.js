@@ -17,6 +17,7 @@ function EventDetailsPage({
   onDeleteEvent,
   onManageRooms,
   onManageInvites,
+  initialTab = 'event',
 }) {
   const { sessionToken } = useAuth();
   const [event, setEvent] = useState(null);
@@ -27,17 +28,60 @@ function EventDetailsPage({
   const [participantCount, setParticipantCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('event');
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  /**
+   * Get tab from URL hash or default to 'event'
+   */
+  const getTabFromHash = () => {
+    const hash = window.location.hash;
+    console.log('getTabFromHash - Full hash:', hash);
+
+    // Handle both #tab= and %23tab= (URL encoded)
+    let tab = null;
+    if (hash.includes('#tab=')) {
+      tab = hash.split('#tab=')[1];
+    } else if (hash.includes('%23tab=')) {
+      tab = hash.split('%23tab=')[1];
+    }
+
+    console.log('getTabFromHash - Extracted tab:', tab);
+    if (tab && ['event', 'rooms', 'invites'].includes(tab)) {
+      console.log('getTabFromHash - Valid tab found:', tab);
+      return tab;
+    }
+
+    console.log('getTabFromHash - No valid tab found, defaulting to event');
+    return 'event';
+  };
+
+  /**
+   * Update URL hash with current tab
+   */
+  const updateUrlHash = (tab) => {
+    const currentHash = window.location.hash;
+    const baseHash = currentHash.split('#tab=')[0];
+    const newHash = `${baseHash}#tab=${tab}`;
+    window.history.replaceState(null, '', newHash);
+  };
+
+  /**
+   * Handle tab change and update URL
+   */
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    updateUrlHash(tab);
+  };
 
   /**
    * Fetch participant count for the event
    */
-  const fetchParticipantCount = async () => {
-    if (!eventId) return;
+  const fetchParticipantCount = async (eventIdToFetch = eventId) => {
+    if (!eventIdToFetch) return;
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/event-participants/event/${eventId}/public`
+        `http://localhost:3001/api/event-participants/event/${eventIdToFetch}/public`
       );
 
       const data = await response.json();
@@ -54,12 +98,12 @@ function EventDetailsPage({
   /**
    * Fetch invitations for the event
    */
-  const fetchInvitations = async () => {
-    if (!eventId || !sessionToken) return;
+  const fetchInvitations = async (eventIdToFetch = eventId) => {
+    if (!eventIdToFetch || !sessionToken) return;
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/invitations/event/${eventId}`,
+        `http://localhost:3001/api/invitations/event/${eventIdToFetch}`,
         {
           headers: {
             Authorization: `Bearer ${sessionToken}`,
@@ -80,15 +124,15 @@ function EventDetailsPage({
   /**
    * Fetch event details from the API
    */
-  const fetchEventDetails = async () => {
-    if (!eventId) return;
+  const fetchEventDetails = async (eventIdToFetch = eventId) => {
+    if (!eventIdToFetch) return;
 
     try {
       setLoading(true);
       setError(null);
 
       const response = await fetch(
-        `http://localhost:3001/api/events/${eventId}/public`
+        `http://localhost:3001/api/events/${eventIdToFetch}/public`
       );
 
       const data = await response.json();
@@ -296,13 +340,17 @@ function EventDetailsPage({
   // Fetch data when component mounts or dependencies change
   useEffect(() => {
     if (eventId) {
+      // Clean eventId to remove any tab hash
+      const cleanEventId = eventId.split('#')[0];
       console.log(
         'EventDetailsPage: Fetching event details for eventId:',
-        eventId
+        cleanEventId
       );
       console.log('EventDetailsPage: Current user:', currentUser);
-      fetchEventDetails();
-      fetchParticipantCount();
+
+      // Always fetch event details (public endpoint)
+      fetchEventDetails(cleanEventId);
+      fetchParticipantCount(cleanEventId);
     }
   }, [eventId]);
 
@@ -313,7 +361,8 @@ function EventDetailsPage({
       event &&
       event.createdBy === currentUser.userId
     ) {
-      fetchInvitations();
+      const cleanEventId = eventId.split('#')[0];
+      fetchInvitations(cleanEventId);
     }
   }, [eventId, currentUser, event]);
 
@@ -325,13 +374,31 @@ function EventDetailsPage({
       event &&
       event.createdBy === currentUser.userId
     ) {
+      const cleanEventId = eventId.split('#')[0];
       console.log(
         'Current user now available, fetching event rooms for event:',
-        eventId
+        cleanEventId
       );
-      fetchEventRooms(eventId);
+      fetchEventRooms(cleanEventId);
     }
   }, [eventId, currentUser, event]);
+
+  // Set initial tab from prop on component mount
+  useEffect(() => {
+    console.log('Setting initial tab from prop to:', initialTab);
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  // Handle browser back/forward navigation for tabs
+  useEffect(() => {
+    const handleHashChange = () => {
+      const tab = getTabFromHash();
+      setActiveTab(tab);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   if (loading) {
     return (
@@ -492,9 +559,10 @@ function EventDetailsPage({
         <div className="bg-gray-800 rounded-lg border border-gray-700">
           {/* Tab Navigation */}
           <div className="border-b border-gray-700">
+            {console.log('Rendering tab navigation - activeTab:', activeTab)}
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
               <button
-                onClick={() => setActiveTab('event')}
+                onClick={() => handleTabChange('event')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'event'
                     ? 'border-blue-500 text-blue-400'
@@ -505,7 +573,7 @@ function EventDetailsPage({
               </button>
               {currentUser && event.createdBy === currentUser.userId && (
                 <button
-                  onClick={() => setActiveTab('rooms')}
+                  onClick={() => handleTabChange('rooms')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'rooms'
                       ? 'border-blue-500 text-blue-400'
@@ -517,7 +585,7 @@ function EventDetailsPage({
               )}
               {currentUser && event.createdBy === currentUser.userId && (
                 <button
-                  onClick={() => setActiveTab('invites')}
+                  onClick={() => handleTabChange('invites')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'invites'
                       ? 'border-blue-500 text-blue-400'
@@ -733,7 +801,9 @@ function EventDetailsPage({
                   'Rendering rooms tab - eventRooms:',
                   eventRooms,
                   'length:',
-                  eventRooms.length
+                  eventRooms.length,
+                  'activeTab:',
+                  activeTab
                 )}
                 {eventRooms.length > 0 ? (
                   <div className="space-y-4">

@@ -17,6 +17,7 @@ function App() {
   const [showManageInvitesModal, setShowManageInvitesModal] = useState(false);
   const [inviteCode, setInviteCode] = useState(null);
   const [redirectAfterAuth, setRedirectAfterAuth] = useState(null);
+  const [currentTab, setCurrentTab] = useState('event');
 
   /**
    * Handle logout
@@ -215,9 +216,28 @@ function App() {
         setInviteCode(code);
         setCurrentPage(`invite/${code}`);
       } else if (hash.startsWith('event-details/')) {
-        const eventId = hash.split('/')[1];
+        const eventId = hash.split('/')[1].split('#')[0]; // Remove any tab hash
         setSelectedEventId(eventId);
         setCurrentPage(`event-details/${eventId}`);
+
+        // Extract tab from hash if present
+        if (hash.includes('#tab=')) {
+          const tab = hash.split('#tab=')[1];
+          if (['event', 'rooms', 'invites'].includes(tab)) {
+            setCurrentTab(tab);
+          } else {
+            setCurrentTab('event');
+          }
+        } else if (hash.includes('%23tab=')) {
+          const tab = hash.split('%23tab=')[1];
+          if (['event', 'rooms', 'invites'].includes(tab)) {
+            setCurrentTab(tab);
+          } else {
+            setCurrentTab('event');
+          }
+        } else {
+          setCurrentTab('event');
+        }
       } else if (hash === 'events') {
         setCurrentPage('events');
       } else if (hash === 'venues') {
@@ -258,10 +278,30 @@ function App() {
 
       // Parse eventId from hash if it's an event-details page
       if (hash.startsWith('event-details/')) {
-        const eventId = hash.split('/')[1];
+        const eventId = hash.split('/')[1].split('#')[0]; // Remove any tab hash
         setSelectedEventId(eventId);
+
+        // Extract tab from hash if present
+        if (hash.includes('#tab=')) {
+          const tab = hash.split('#tab=')[1];
+          if (['event', 'rooms', 'invites'].includes(tab)) {
+            setCurrentTab(tab);
+          } else {
+            setCurrentTab('event');
+          }
+        } else if (hash.includes('%23tab=')) {
+          const tab = hash.split('%23tab=')[1];
+          if (['event', 'rooms', 'invites'].includes(tab)) {
+            setCurrentTab(tab);
+          } else {
+            setCurrentTab('event');
+          }
+        } else {
+          setCurrentTab('event');
+        }
       } else {
         setSelectedEventId(null);
+        setCurrentTab('event');
       }
     };
 
@@ -374,6 +414,7 @@ function App() {
             onDeleteEvent={handleDeleteEvent}
             onManageRooms={handleManageRooms}
             onManageInvites={handleManageInvites}
+            initialTab={currentTab}
           />
         ) : currentPage.startsWith('invite/') && inviteCode ? (
           <InviteRedemptionPage
