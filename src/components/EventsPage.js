@@ -13,6 +13,7 @@ function EventsPage({ onViewEventDetails, currentUser }) {
   const { sessionToken, loading: authLoading, isAuthenticated } = useAuth();
   const [events, setEvents] = useState([]);
   const [participantCounts, setParticipantCounts] = useState({});
+  const [venueImages, setVenueImages] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -53,6 +54,81 @@ function EventsPage({ onViewEventDetails, currentUser }) {
   };
 
   /**
+   * Generate presigned URL for venue image
+   */
+  const generateVenueImageUrl = async (imageUrl) => {
+    if (!imageUrl || !sessionToken) return null;
+
+    try {
+      const url = new URL(imageUrl);
+      const pathParts = url.pathname.substring(1).split('/');
+      const key = pathParts.slice(1).join('/');
+
+      const response = await fetch(
+        `http://localhost:3001/api/images/presigned/${encodeURIComponent(
+          key
+        )}?expiresIn=3600`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+      return result.success ? result.data.url : null;
+    } catch (err) {
+      console.error('Error generating presigned URL for venue image:', err);
+      return null;
+    }
+  };
+
+  /**
+   * Fetch venue data for events with venues
+   */
+  const fetchVenueData = async (eventsList) => {
+    if (!sessionToken) return;
+
+    const venuePromises = eventsList
+      .filter((event) => event.venueId)
+      .map(async (event) => {
+        try {
+          const response = await fetch(
+            `http://localhost:3001/api/venues/${event.venueId}/public`
+          );
+          const data = await response.json();
+
+          if (data.success && data.data.imageUrl) {
+            const presignedUrl = await generateVenueImageUrl(
+              data.data.imageUrl
+            );
+            return { eventId: event.eventId, imageUrl: presignedUrl };
+          }
+        } catch (err) {
+          console.error(
+            `Error fetching venue for event ${event.eventId}:`,
+            err
+          );
+        }
+        return null;
+      });
+
+    try {
+      const results = await Promise.all(venuePromises);
+      const venueImages = {};
+      results.forEach((result) => {
+        if (result && result.imageUrl) {
+          venueImages[result.eventId] = result.imageUrl;
+        }
+      });
+      setVenueImages(venueImages);
+    } catch (err) {
+      console.error('Error fetching venue images:', err);
+    }
+  };
+
+  /**
    * Fetch events from the API
    */
   const fetchEvents = async () => {
@@ -81,6 +157,8 @@ function EventsPage({ onViewEventDetails, currentUser }) {
         setEvents(eventsList);
         // Fetch participant counts for all events
         await fetchAllParticipantCounts(eventsList);
+        // Fetch venue images for events with venues
+        await fetchVenueData(eventsList);
       } else {
         setError(data.message || 'Failed to fetch events');
       }
@@ -433,6 +511,23 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                           </div>
                         </div>
 
+                        {/* Venue Image */}
+                        {venueImages[event.eventId] && (
+                          <div className="mt-4 sm:mt-0 sm:ml-4 flex-shrink-0">
+                            <img
+                              src={venueImages[event.eventId]}
+                              alt="Venue"
+                              className="w-36 h-28 object-cover rounded-lg border border-gray-600 bg-gray-700"
+                              onError={(e) => {
+                                console.log(
+                                  'Venue image failed to load:',
+                                  e.target.src
+                                );
+                              }}
+                            />
+                          </div>
+                        )}
+
                         <div className="mt-4 sm:mt-0 sm:ml-6">
                           <button
                             onClick={() => onViewEventDetails(event.eventId)}
@@ -584,6 +679,23 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                               )}
                             </div>
                           </div>
+
+                          {/* Venue Image */}
+                          {venueImages[event.eventId] && (
+                            <div className="mt-4 sm:mt-0 sm:ml-4 flex-shrink-0">
+                              <img
+                                src={venueImages[event.eventId]}
+                                alt="Venue"
+                                className="w-36 h-28 object-cover rounded-lg border border-gray-600 bg-gray-700"
+                                onError={(e) => {
+                                  console.log(
+                                    'Venue image failed to load:',
+                                    e.target.src
+                                  );
+                                }}
+                              />
+                            </div>
+                          )}
 
                           <div className="mt-4 sm:mt-0 sm:ml-6">
                             <button
