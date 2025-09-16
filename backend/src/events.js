@@ -50,6 +50,8 @@ class EventService {
         currentParticipants: 1, // Creator is automatically a participant
         status: 'active',
         createdBy: eventData.createdBy || null, // User ID who created the event
+        creatorName: eventData.creatorName || 'Unknown', // Creator's name
+        creatorEmail: eventData.creatorEmail || '', // Creator's email
         createdAt: now,
         updatedAt: now,
         entityType: 'EVENT',

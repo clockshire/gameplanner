@@ -285,28 +285,36 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-xl font-semibold text-white">
+                          <div className="mb-2">
+                            <h3 className="text-lg font-semibold text-white mb-2">
                               {event.eventName}
                             </h3>
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${getStatusBadgeClasses(
-                                event.status
-                              )}`}
-                            >
-                              {event.status}
-                            </span>
-                            {/* User role label */}
-                            {event.isOwner && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
-                                Your Event
+                            <div className="flex items-center space-x-3">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${getStatusBadgeClasses(
+                                  event.status
+                                )}`}
+                              >
+                                {event.status}
                               </span>
-                            )}
-                            {event.isParticipant && !event.isOwner && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-600 text-white border border-blue-700">
-                                Participating
+                              <span className="text-gray-400 text-sm">
+                                Created by {event.creatorName || 'Unknown'} on{' '}
+                                {new Date(event.createdAt).toLocaleDateString(
+                                  'en-GB'
+                                )}
                               </span>
-                            )}
+                              {/* User role label */}
+                              {event.isOwner && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
+                                  Your Event
+                                </span>
+                              )}
+                              {event.isParticipant && !event.isOwner && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-600 text-white border border-blue-700">
+                                  Participating
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           {event.description && (
@@ -429,28 +437,36 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-2">
-                              <h3 className="text-xl font-semibold text-white">
+                            <div className="mb-2">
+                              <h3 className="text-lg font-semibold text-white mb-2">
                                 {event.eventName}
                               </h3>
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${getStatusBadgeClasses(
-                                  event.status
-                                )}`}
-                              >
-                                {event.status}
-                              </span>
-                              {/* User role label */}
-                              {event.isOwner && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
-                                  Your Event
+                              <div className="flex items-center space-x-3">
+                                <span
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium border ${getStatusBadgeClasses(
+                                    event.status
+                                  )}`}
+                                >
+                                  {event.status}
                                 </span>
-                              )}
-                              {event.isParticipant && !event.isOwner && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-600 text-white border border-blue-700">
-                                  Participating
+                                <span className="text-gray-400 text-sm">
+                                  Created by {event.creatorName || 'Unknown'} on{' '}
+                                  {new Date(event.createdAt).toLocaleDateString(
+                                    'en-GB'
+                                  )}
                                 </span>
-                              )}
+                                {/* User role label */}
+                                {event.isOwner && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-red-600 text-white border border-red-700">
+                                    Your Event
+                                  </span>
+                                )}
+                                {event.isParticipant && !event.isOwner && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-600 text-white border border-blue-700">
+                                    Participating
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
                             {event.description && (

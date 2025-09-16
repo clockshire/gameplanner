@@ -637,7 +637,7 @@ function EventDetailsPage({
                 )}
               </div>
 
-              <h1 className="text-3xl font-bold text-white mb-2">
+              <h1 className="text-2xl font-bold text-white mb-2">
                 {event.eventName}
               </h1>
               <div className="flex items-center space-x-3">
@@ -649,19 +649,10 @@ function EventDetailsPage({
                   {event.status}
                 </span>
                 <span className="text-gray-400 text-sm">
-                  Created {new Date(event.createdAt).toLocaleDateString()}
+                  Created by {creator?.name || event.creatorName || 'Unknown'}{' '}
+                  on {new Date(event.createdAt).toLocaleDateString('en-GB')}
                 </span>
               </div>
-              {creator && (
-                <div className="mt-2">
-                  <span className="text-gray-400 text-sm">
-                    Created by:{' '}
-                    <span className="text-white font-medium">
-                      {creator.name}
-                    </span>
-                  </span>
-                </div>
-              )}
             </div>
           </div>
         </div>

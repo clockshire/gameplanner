@@ -2,6 +2,7 @@
  * Express server for Game Planner application
  * Handles API endpoints and serves the React application
  */
+// foo
 
 const express = require('express');
 const path = require('path');
