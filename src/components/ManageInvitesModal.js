@@ -17,7 +17,7 @@ function ManageInvitesModal({ event, isOpen, onClose, onInviteCreated }) {
   const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createForm, setCreateForm] = useState({
-    type: 'generic',
+    type: 'one-time',
     description: '',
   });
   const [copiedInviteCode, setCopiedInviteCode] = useState(null);
