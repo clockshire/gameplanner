@@ -124,7 +124,10 @@ function EventDetailsPage({
       const data = await response.json();
 
       if (data.success) {
+        console.log('fetchInvitations - API returned data:', data.data);
         setInvitations(data.data || []);
+      } else {
+        console.warn('fetchInvitations - API returned error:', data.message);
       }
     } catch (err) {
       console.error('Error fetching invitations:', err);
@@ -369,16 +372,19 @@ function EventDetailsPage({
       eventId &&
       currentUser &&
       event &&
-      event.createdBy === currentUser.userId
+      event.createdBy === currentUser.userId &&
+      sessionToken
     ) {
       const cleanEventId = eventId.split('#')[0];
       console.log(
         'useEffect - fetching invitations for cleanEventId:',
-        cleanEventId
+        cleanEventId,
+        'sessionToken:',
+        !!sessionToken
       );
       fetchInvitations(cleanEventId);
     }
-  }, [eventId, currentUser, event]);
+  }, [eventId, currentUser, event, sessionToken]);
 
   // Fetch event rooms when currentUser becomes available and user is the creator
   useEffect(() => {

@@ -271,6 +271,45 @@ function App() {
   /**
    * Handle browser back/forward navigation
    */
+  // Handle initial page load
+  useEffect(() => {
+    const handleInitialLoad = () => {
+      const hash = window.location.hash.slice(1) || 'home';
+      setCurrentPage(hash);
+
+      // Parse eventId from hash if it's an event-details page
+      if (hash.startsWith('event-details/')) {
+        const eventId = hash.split('/')[1].split('#')[0]; // Remove any tab hash
+        setSelectedEventId(eventId);
+
+        // Extract tab from hash if present
+        if (hash.includes('#tab=')) {
+          const tab = hash.split('#tab=')[1];
+          if (['event', 'rooms', 'invites'].includes(tab)) {
+            setCurrentTab(tab);
+          } else {
+            setCurrentTab('event');
+          }
+        } else if (hash.includes('%23tab=')) {
+          const tab = hash.split('%23tab=')[1];
+          if (['event', 'rooms', 'invites'].includes(tab)) {
+            setCurrentTab(tab);
+          } else {
+            setCurrentTab('event');
+          }
+        } else {
+          setCurrentTab('event');
+        }
+      } else {
+        setSelectedEventId(null);
+        setCurrentTab('event');
+      }
+    };
+
+    // Handle initial load
+    handleInitialLoad();
+  }, []);
+
   useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.slice(1) || 'home';
