@@ -18,6 +18,66 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
   const [venueRooms, setVenueRooms] = useState({});
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [venueToDelete, setVenueToDelete] = useState(null);
+  const [venueImageUrls, setVenueImageUrls] = useState({});
+
+  /**
+   * Generate presigned URL for venue image display
+   */
+  const generateVenueImageUrl = async (imageUrl) => {
+    if (!imageUrl || !sessionToken) return null;
+
+    try {
+      // Extract the key from the MinIO URL
+      const url = new URL(imageUrl);
+      const pathParts = url.pathname.substring(1).split('/'); // Remove leading slash and split
+      const key = pathParts.slice(1).join('/'); // Remove bucket name, keep only object key
+
+      const response = await fetch(
+        `http://localhost:3001/api/images/presigned/${encodeURIComponent(
+          key
+        )}?expiresIn=3600`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+      return result.success ? result.data.url : null;
+    } catch (err) {
+      console.error('Error generating presigned URL for venue image:', err);
+      return null;
+    }
+  };
+
+  /**
+   * Generate presigned URLs for all venue images
+   */
+  const generateVenueImageUrls = async (venuesList) => {
+    if (!sessionToken) return;
+
+    const imagePromises = venuesList
+      .filter((venue) => venue.imageUrl)
+      .map(async (venue) => {
+        const presignedUrl = await generateVenueImageUrl(venue.imageUrl);
+        return { venueId: venue.venueId, presignedUrl };
+      });
+
+    try {
+      const results = await Promise.all(imagePromises);
+      const imageUrls = {};
+      results.forEach(({ venueId, presignedUrl }) => {
+        if (presignedUrl) {
+          imageUrls[venueId] = presignedUrl;
+        }
+      });
+      setVenueImageUrls(imageUrls);
+    } catch (err) {
+      console.error('Error generating venue image URLs:', err);
+    }
+  };
 
   /**
    * Fetch venues from the API
@@ -47,6 +107,8 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
         setVenues(data.data || []);
         // Fetch rooms for each venue
         fetchRoomsForVenues(data.data || []);
+        // Generate presigned URLs for venue images
+        generateVenueImageUrls(data.data || []);
       } else {
         setError(data.message || 'Failed to fetch venues');
       }
@@ -149,6 +211,13 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
       fetchVenues();
     }
   }, [authLoading, isAuthenticated, sessionToken]);
+
+  // Regenerate image URLs when sessionToken changes
+  useEffect(() => {
+    if (sessionToken && venues.length > 0) {
+      generateVenueImageUrls(venues);
+    }
+  }, [sessionToken]);
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
@@ -280,6 +349,23 @@ function VenuesPage({ onEditVenue, onVenueUpdated }) {
                         </svg>
                       </button>
                     </div>
+
+                    {/* Venue Image */}
+                    {venue.imageUrl && venueImageUrls[venue.venueId] && (
+                      <div className="mb-4">
+                        <img
+                          src={venueImageUrls[venue.venueId]}
+                          alt={`${venue.venueName} venue`}
+                          className="w-full h-48 object-contain rounded-lg border border-gray-600 bg-gray-700"
+                          onError={(e) => {
+                            console.log(
+                              'Venue image failed to load:',
+                              e.target.src
+                            );
+                          }}
+                        />
+                      </div>
+                    )}
 
                     {venue.description && (
                       <p className="text-gray-300 mb-4 text-sm">

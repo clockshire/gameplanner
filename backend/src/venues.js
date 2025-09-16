@@ -26,6 +26,7 @@ class VenueService {
    * @param {string} venueData.websiteURL - Website URL
    * @param {number} venueData.capacity - Maximum capacity
    * @param {string} venueData.mapLink - Optional map link (e.g., Google Maps)
+   * @param {string} venueData.imageUrl - Optional venue image URL
    * @param {string} createdBy - User ID of the creator
    * @returns {Promise<Object>} Created venue
    */
@@ -46,6 +47,7 @@ class VenueService {
         websiteURL: venueData.websiteURL || null,
         capacity: venueData.capacity || 0,
         mapLink: venueData.mapLink || null,
+        imageUrl: venueData.imageUrl || null,
         createdBy: createdBy,
         createdAt: now,
         updatedAt: now,

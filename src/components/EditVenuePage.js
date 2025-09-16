@@ -19,6 +19,7 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
     contactEmail: '',
     websiteURL: '',
     mapLink: '',
+    imageUrl: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -26,6 +27,10 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
   const [rooms, setRooms] = useState([]);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUploadResult, setImageUploadResult] = useState(null);
+  const [imageDisplayUrl, setImageDisplayUrl] = useState(null);
 
   /**
    * Fetch venue data to populate the form
@@ -57,6 +62,7 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
           websiteURL: venue.websiteURL || '',
           capacity: venue.capacity || '',
           mapLink: venue.mapLink || '',
+          imageUrl: venue.imageUrl || '',
         });
       } else {
         setError(data.message || 'Failed to fetch venue');
@@ -147,6 +153,133 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
   };
 
   /**
+   * Handle image file selection
+   * @param {Event} event - File input change event
+   */
+  const handleImageSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select an image file');
+        return;
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        setError('File size must be less than 10MB');
+        return;
+      }
+
+      setSelectedImage(file);
+      setError(null);
+    }
+  };
+
+  /**
+   * Upload selected image
+   */
+  const handleImageUpload = async () => {
+    if (!selectedImage || !sessionToken) {
+      setError('Please select an image and ensure you are logged in');
+      return;
+    }
+
+    setUploadingImage(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedImage);
+      formData.append('folder', 'venue-images');
+
+      const response = await fetch('http://localhost:3001/api/images/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setImageUploadResult(result.data);
+        setFormData((prev) => ({ ...prev, imageUrl: result.data.url }));
+
+        // Generate presigned URL for display
+        const displayUrl = await generateImageDisplayUrl(result.data.url);
+        setImageDisplayUrl(displayUrl);
+
+        setSelectedImage(null);
+        // Reset file input
+        document.getElementById('venue-image-input').value = '';
+        setError(null);
+      } else {
+        setError(result.message || 'Image upload failed');
+      }
+    } catch (err) {
+      setError('Network error: ' + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  /**
+   * Generate presigned URL for image display
+   */
+  const generateImageDisplayUrl = async (imageUrl) => {
+    if (!imageUrl || !sessionToken) return null;
+
+    try {
+      // Extract the key from the MinIO URL
+      const url = new URL(imageUrl);
+      const pathParts = url.pathname.substring(1).split('/'); // Remove leading slash and split
+      const key = pathParts.slice(1).join('/'); // Remove bucket name, keep only object key
+
+      console.log('Original imageUrl:', imageUrl);
+      console.log('Path parts:', pathParts);
+      console.log('Extracted key:', key);
+
+      const response = await fetch(
+        `http://localhost:3001/api/images/presigned/${encodeURIComponent(
+          key
+        )}?expiresIn=3600`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+      console.log('Presigned URL result:', result);
+      console.log('Presigned URL data:', result.data);
+      console.log('Presigned URL:', result.data?.url);
+      return result.success ? result.data.url : null;
+    } catch (err) {
+      console.error('Error generating presigned URL:', err);
+      return null;
+    }
+  };
+
+  /**
+   * Remove current image
+   */
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, imageUrl: '' }));
+    setImageUploadResult(null);
+    setImageDisplayUrl(null);
+    setSelectedImage(null);
+    // Reset file input
+    const fileInput = document.getElementById('venue-image-input');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  /**
    * Handle form submission
    * @param {Event} e - Form submit event
    */
@@ -165,6 +298,7 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
         contactEmail: formData.contactEmail || null,
         websiteURL: formData.websiteURL || null,
         mapLink: formData.mapLink || null,
+        imageUrl: formData.imageUrl || null,
       };
 
       const headers = {
@@ -209,6 +343,13 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
       fetchRooms();
     }
   }, [venueId]);
+
+  // Generate presigned URL when imageUrl changes
+  useEffect(() => {
+    if (formData.imageUrl && sessionToken) {
+      generateImageDisplayUrl(formData.imageUrl).then(setImageDisplayUrl);
+    }
+  }, [formData.imageUrl, sessionToken]);
 
   if (initialLoading) {
     return (
@@ -416,6 +557,92 @@ function EditVenuePage({ venueId, onBack, onVenueUpdated }) {
               />
               <p className="text-xs text-gray-400 mt-1">
                 Google Maps or other map service link
+              </p>
+            </div>
+
+            {/* Venue Image Upload */}
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-300">
+                Venue Image (Optional)
+              </label>
+
+              {/* Current Image Display */}
+              {(formData.imageUrl || imageUploadResult) && (
+                <div className="relative">
+                  <img
+                    src={imageDisplayUrl || imageUploadResult?.url}
+                    alt="Venue preview"
+                    className="w-full h-48 object-cover rounded-lg border border-gray-600"
+                    onError={(e) => {
+                      console.log('Image failed to load. Src:', e.target.src);
+                      console.log('imageDisplayUrl:', imageDisplayUrl);
+                      console.log(
+                        'imageUploadResult?.url:',
+                        imageUploadResult?.url
+                      );
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-white rounded-full p-2 transition-colors"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              {/* Image Upload Section */}
+              {!formData.imageUrl && !imageUploadResult && (
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    id="venue-image-input"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                  />
+
+                  {selectedImage && (
+                    <div className="p-3 bg-gray-700 rounded-lg">
+                      <p className="text-sm text-gray-300">
+                        <strong>Selected:</strong> {selectedImage.name}
+                      </p>
+                      <p className="text-sm text-gray-300">
+                        <strong>Size:</strong>{' '}
+                        {(selectedImage.size / 1024).toFixed(2)} KB
+                      </p>
+                      <p className="text-sm text-gray-300">
+                        <strong>Type:</strong> {selectedImage.type}
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleImageUpload}
+                    disabled={!selectedImage || uploadingImage}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors"
+                  >
+                    {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                  </button>
+                </div>
+              )}
+
+              <p className="text-xs text-gray-400">
+                Supported formats: JPG, PNG, GIF, WebP • Maximum size: 10MB
               </p>
             </div>
 
