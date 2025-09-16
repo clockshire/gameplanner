@@ -1136,7 +1136,7 @@ function EventDetailsPage({
                           />
                         </svg>
                         <span className="text-gray-300 text-sm">
-                          {venue.capacity} people
+                          {venue.capacity} people (calculated from rooms)
                         </span>
                       </div>
                     </div>

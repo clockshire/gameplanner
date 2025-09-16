@@ -18,7 +18,6 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
     contactPhone: '',
     contactEmail: '',
     websiteURL: '',
-    capacity: '',
     mapLink: '',
   });
   const [loading, setLoading] = useState(false);
@@ -54,7 +53,6 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
         contactPhone: formData.contactPhone || null,
         contactEmail: formData.contactEmail || null,
         websiteURL: formData.websiteURL || null,
-        capacity: formData.capacity ? parseInt(formData.capacity) : 0,
         mapLink: formData.mapLink || null,
       };
 
@@ -80,8 +78,10 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
           name: '',
           description: '',
           address: '',
-          contactInfo: '',
-          capacity: '',
+          contactPhone: '',
+          contactEmail: '',
+          websiteURL: '',
+          mapLink: '',
         });
 
         // Notify parent component
@@ -283,26 +283,6 @@ function CreateVenueModal({ isOpen, onClose, onVenueCreated }) {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="https://www.venue.com"
-              />
-            </div>
-
-            {/* Capacity */}
-            <div>
-              <label
-                htmlFor="capacity"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
-                Maximum Capacity
-              </label>
-              <input
-                type="number"
-                id="capacity"
-                name="capacity"
-                value={formData.capacity}
-                onChange={handleInputChange}
-                min="0"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter maximum capacity (0 for unlimited)"
               />
             </div>
 

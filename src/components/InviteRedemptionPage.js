@@ -479,7 +479,8 @@ function InviteRedemptionPage({ inviteCode, onBack, onLoginWithRedirect }) {
                       )}
                       {venue.capacity && (
                         <p className="text-sm text-gray-400">
-                          Capacity: {venue.capacity} people
+                          Capacity: {venue.capacity} people (calculated from
+                          rooms)
                         </p>
                       )}
                       {venue.contactPhone && (
