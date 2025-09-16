@@ -74,11 +74,11 @@
 
     <!-- Initialize app with AuthProvider -->
     <script type="text/babel">
-      ReactDOM.render(
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
         <AuthProvider>
           <App />
-        </AuthProvider>,
-        document.getElementById('root')
+        </AuthProvider>
       );
     </script>
   </body>
