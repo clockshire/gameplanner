@@ -223,14 +223,14 @@ function App() {
         // Extract tab from hash if present
         if (hash.includes('#tab=')) {
           const tab = hash.split('#tab=')[1];
-          if (['event', 'rooms', 'invites'].includes(tab)) {
+          if (['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
             setCurrentTab(tab);
           } else {
             setCurrentTab('event');
           }
         } else if (hash.includes('%23tab=')) {
           const tab = hash.split('%23tab=')[1];
-          if (['event', 'rooms', 'invites'].includes(tab)) {
+          if (['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
             setCurrentTab(tab);
           } else {
             setCurrentTab('event');
@@ -285,14 +285,14 @@ function App() {
         // Extract tab from hash if present
         if (hash.includes('#tab=')) {
           const tab = hash.split('#tab=')[1];
-          if (['event', 'rooms', 'invites'].includes(tab)) {
+          if (['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
             setCurrentTab(tab);
           } else {
             setCurrentTab('event');
           }
         } else if (hash.includes('%23tab=')) {
           const tab = hash.split('%23tab=')[1];
-          if (['event', 'rooms', 'invites'].includes(tab)) {
+          if (['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
             setCurrentTab(tab);
           } else {
             setCurrentTab('event');
@@ -323,14 +323,14 @@ function App() {
         // Extract tab from hash if present
         if (hash.includes('#tab=')) {
           const tab = hash.split('#tab=')[1];
-          if (['event', 'rooms', 'invites'].includes(tab)) {
+          if (['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
             setCurrentTab(tab);
           } else {
             setCurrentTab('event');
           }
         } else if (hash.includes('%23tab=')) {
           const tab = hash.split('%23tab=')[1];
-          if (['event', 'rooms', 'invites'].includes(tab)) {
+          if (['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
             setCurrentTab(tab);
           } else {
             setCurrentTab('event');
