@@ -503,7 +503,10 @@ function App() {
           <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="px-4 py-6 sm:px-0">
               {isAuthenticated ? (
-                <AuthenticatedContent user={user} />
+                <Dashboard
+                  user={user}
+                  onViewEventDetails={handleViewEventDetails}
+                />
               ) : (
                 <HelloWorld onShowAuth={() => setShowAuthModal(true)} />
               )}
@@ -556,50 +559,244 @@ function App() {
   );
 }
 
-// Authenticated content component
-function AuthenticatedContent({ user }) {
-  return (
-    <div className="text-center">
-      <div className="bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-700">
-        <div className="px-4 py-5 sm:p-6">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Welcome back, {user.name}! 🎮
-          </h2>
-          <p className="text-lg text-gray-300 mb-6">
-            You're now logged in and ready to plan your gaming sessions.
-          </p>
+// Dashboard component for authenticated users
+function Dashboard({ user, onViewEventDetails }) {
+  const { sessionToken } = useAuth();
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-          <div className="bg-green-900 border border-green-700 rounded-md p-4 mb-6">
-            <p className="text-green-200">
-              <strong>Authentication Success:</strong> You're logged in as{' '}
-              {user.email}
-            </p>
-            <p className="text-green-300 text-sm mt-2">
-              Member since: {new Date(user.createdAt).toLocaleDateString()}
-            </p>
-          </div>
+  // Fetch upcoming events for the user
+  const fetchUpcomingEvents = async () => {
+    if (!sessionToken) return;
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
-            <div className="bg-gray-700 p-4 rounded border border-gray-600">
-              <h3 className="font-semibold text-white mb-2">
-                ✅ User Authentication
-              </h3>
-              <p className="text-gray-300">Login/signup system working</p>
-            </div>
-            <div className="bg-gray-700 p-4 rounded border border-gray-600">
-              <h3 className="font-semibold text-white mb-2">
-                ✅ Session Management
-              </h3>
-              <p className="text-gray-300">User session active</p>
-            </div>
-            <div className="bg-gray-700 p-4 rounded border border-gray-600">
-              <h3 className="font-semibold text-white mb-2">
-                ✅ Ready for Events
-              </h3>
-              <p className="text-gray-300">Protected features available</p>
-            </div>
-          </div>
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('http://localhost:3001/api/events', {
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const events = data.data || [];
+        const now = new Date();
+
+        // Filter for upcoming events (active status and future dates)
+        const upcoming = events.filter((event) => {
+          if (event.status !== 'active') return false;
+          const eventDate = new Date(event.eventDate);
+          return eventDate >= now;
+        });
+
+        // Sort by event date (soonest first)
+        upcoming.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+
+        setUpcomingEvents(upcoming);
+      } else {
+        setError(data.message || 'Failed to fetch events');
+      }
+    } catch (err) {
+      console.error('Error fetching upcoming events:', err);
+      setError('Failed to fetch upcoming events');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchUpcomingEvents();
+  }, [sessionToken]);
+
+  // Format date for display
+  const formatEventDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Format time for display
+  const formatEventTime = (timeString) => {
+    if (!timeString) return '';
+    try {
+      if (/^\d{2}:\d{2}$/.test(timeString)) {
+        return timeString;
+      }
+      const date = new Date(timeString);
+      return date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      return timeString;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+        <p className="text-gray-400 mt-4">Loading your events...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="bg-red-900 border border-red-700 rounded-md p-4 max-w-md mx-auto">
+          <p className="text-red-200">{error}</p>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Welcome Header */}
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-white mb-2">
+          Welcome back, {user.name}! 🎮
+        </h1>
+        <p className="text-xl text-gray-300">
+          Ready to plan your next gaming session?
+        </p>
+      </div>
+
+      {/* Upcoming Events Section */}
+      <div>
+        <h2 className="text-2xl font-semibold text-white mb-6">
+          Your Upcoming Events
+        </h2>
+
+        {upcomingEvents.length === 0 ? (
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
+            <div className="text-6xl mb-4">🎲</div>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              No upcoming events
+            </h3>
+            <p className="text-gray-400 mb-6">
+              You don't have any upcoming events yet. Create your first event or
+              join one!
+            </p>
+            <div className="space-x-4">
+              <a
+                href="#events"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+              >
+                Browse Events
+              </a>
+              <a
+                href="#events"
+                className="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
+              >
+                Create Event
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {upcomingEvents.map((event) => (
+              <div
+                key={event.eventId}
+                className="bg-gray-800 rounded-lg border border-gray-700 p-6 hover:border-gray-600 transition-colors cursor-pointer"
+                onClick={() => onViewEventDetails(event.eventId)}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-white truncate">
+                    {event.eventName}
+                  </h3>
+                  <span className="bg-green-900 text-green-300 px-2 py-1 rounded-full text-xs font-medium">
+                    Active
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center text-gray-300">
+                    <svg
+                      className="h-4 w-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span className="text-sm">
+                      {formatEventDate(event.eventDate)}
+                    </span>
+                  </div>
+
+                  {event.startTime && (
+                    <div className="flex items-center text-gray-300">
+                      <svg
+                        className="h-4 w-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span className="text-sm">
+                        {formatEventTime(event.startTime)}
+                      </span>
+                    </div>
+                  )}
+
+                  {event.maxParticipants > 0 && (
+                    <div className="flex items-center text-gray-300">
+                      <svg
+                        className="h-4 w-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                      <span className="text-sm">
+                        {event.currentParticipants || 0} /{' '}
+                        {event.maxParticipants} participants
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <p className="text-blue-400 text-sm font-medium">
+                    Click to view details →
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
