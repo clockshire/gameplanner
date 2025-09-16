@@ -528,12 +528,6 @@ function EventDetailsPage({
                   Edit Event
                 </button>
                 <button
-                  onClick={() => onManageInvites(event)}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
-                >
-                  Manage Invites
-                </button>
-                <button
                   onClick={() => onDeleteEvent(event)}
                   className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors"
                 >
@@ -957,9 +951,19 @@ function EventDetailsPage({
               <div className="space-y-6">
                 {/* Invitation Summary */}
                 <div className="bg-gray-700 rounded-lg p-6">
-                  <h2 className="text-xl font-semibold text-white mb-4">
-                    Invitation Summary
-                  </h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold text-white">
+                      Invitation Summary
+                    </h2>
+                    {currentUser && event.createdBy === currentUser.userId && (
+                      <button
+                        onClick={() => onManageInvites(event)}
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm"
+                      >
+                        Manage Invites
+                      </button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-blue-400">
