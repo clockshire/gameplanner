@@ -36,7 +36,6 @@ function EventDetailsPage({
    */
   const getTabFromHash = () => {
     const hash = window.location.hash;
-    console.log('getTabFromHash - Full hash:', hash);
 
     // Handle both #tab= and %23tab= (URL encoded)
     let tab = null;
@@ -46,13 +45,10 @@ function EventDetailsPage({
       tab = hash.split('%23tab=')[1];
     }
 
-    console.log('getTabFromHash - Extracted tab:', tab);
     if (tab && ['event', 'rooms', 'invites', 'attendees'].includes(tab)) {
-      console.log('getTabFromHash - Valid tab found:', tab);
       return tab;
     }
 
-    console.log('getTabFromHash - No valid tab found, defaulting to event');
     return 'event';
   };
 
@@ -105,12 +101,6 @@ function EventDetailsPage({
     const cleanEventId = eventIdToFetch
       ? eventIdToFetch.split('#')[0]
       : eventId?.split('#')[0];
-    console.log(
-      'fetchInvitations - cleanEventId:',
-      cleanEventId,
-      'sessionToken:',
-      !!sessionToken
-    );
     if (!cleanEventId || !sessionToken) return;
 
     try {
@@ -126,10 +116,7 @@ function EventDetailsPage({
       const data = await response.json();
 
       if (data.success) {
-        console.log('fetchInvitations - API returned data:', data.data);
         setInvitations(data.data || []);
-      } else {
-        console.warn('fetchInvitations - API returned error:', data.message);
       }
     } catch (err) {
       console.error('Error fetching invitations:', err);
@@ -160,10 +147,7 @@ function EventDetailsPage({
         }
         // If event has a creator, fetch creator details
         if (data.data.createdBy) {
-          console.log('Fetching creator details for:', data.data.createdBy);
           await fetchCreatorDetails(data.data.createdBy);
-        } else {
-          console.log('No creator ID found in event data');
         }
         // Event rooms will be fetched when currentUser becomes available
       } else {
@@ -227,12 +211,9 @@ function EventDetailsPage({
 
       if (data.success) {
         setCreator(data.data);
-        console.log('Fetched creator details:', data.data);
-      } else {
-        console.warn('Failed to fetch creator details:', data.message);
       }
     } catch (err) {
-      console.warn('Error fetching creator details:', err);
+      console.error('Error fetching creator details:', err);
     }
   };
 
@@ -254,15 +235,10 @@ function EventDetailsPage({
       const data = await response.json();
 
       if (data.success) {
-        console.log('API returned rooms data:', data.data);
-        console.log('Number of rooms:', data.data?.length || 0);
         setEventRooms(data.data || []);
-        console.log('Set eventRooms state to:', data.data);
-      } else {
-        console.warn('Failed to fetch event rooms:', data.message);
       }
     } catch (err) {
-      console.warn('Error fetching event rooms:', err);
+      console.error('Error fetching event rooms:', err);
     }
   };
 
@@ -357,11 +333,6 @@ function EventDetailsPage({
     if (eventId) {
       // Clean eventId to remove any tab hash
       const cleanEventId = eventId.split('#')[0];
-      console.log(
-        'EventDetailsPage: Fetching event details for eventId:',
-        cleanEventId
-      );
-      console.log('EventDetailsPage: Current user:', currentUser);
 
       // Always fetch event details (public endpoint)
       fetchEventDetails(cleanEventId);
@@ -378,12 +349,6 @@ function EventDetailsPage({
       sessionToken
     ) {
       const cleanEventId = eventId.split('#')[0];
-      console.log(
-        'useEffect - fetching invitations for cleanEventId:',
-        cleanEventId,
-        'sessionToken:',
-        !!sessionToken
-      );
       fetchInvitations(cleanEventId);
     }
   }, [eventId, currentUser, event, sessionToken]);
@@ -397,17 +362,12 @@ function EventDetailsPage({
       event.createdBy === currentUser.userId
     ) {
       const cleanEventId = eventId.split('#')[0];
-      console.log(
-        'Current user now available, fetching event rooms for event:',
-        cleanEventId
-      );
       fetchEventRooms(cleanEventId);
     }
   }, [eventId, currentUser, event]);
 
   // Set initial tab from prop on component mount
   useEffect(() => {
-    console.log('Setting initial tab from prop to:', initialTab);
     setActiveTab(initialTab);
   }, [initialTab]);
 
@@ -551,7 +511,6 @@ function EventDetailsPage({
         <div className="bg-gray-800 rounded-lg border border-gray-700">
           {/* Tab Navigation */}
           <div className="border-b border-gray-700">
-            {console.log('Rendering tab navigation - activeTab:', activeTab)}
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
               <button
                 onClick={() => handleTabChange('event')}
@@ -828,14 +787,6 @@ function EventDetailsPage({
                     </button>
                   )}
                 </div>
-                {console.log(
-                  'Rendering rooms tab - eventRooms:',
-                  eventRooms,
-                  'length:',
-                  eventRooms.length,
-                  'activeTab:',
-                  activeTab
-                )}
                 {eventRooms.length > 0 ? (
                   <div className="space-y-4">
                     {eventRooms.map((room) => (
