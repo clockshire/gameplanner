@@ -325,7 +325,7 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex-1">
                           <div className="mb-2">
-                            <h3 className="text-lg font-semibold text-white mb-2">
+                            <h3 className="text-xl font-semibold text-white mb-2">
                               {event.eventName}
                             </h3>
                             <div className="flex items-center space-x-3">
@@ -477,7 +477,7 @@ function EventsPage({ onViewEventDetails, currentUser }) {
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex-1">
                             <div className="mb-2">
-                              <h3 className="text-lg font-semibold text-white mb-2">
+                              <h3 className="text-xl font-semibold text-white mb-2">
                                 {event.eventName}
                               </h3>
                               <div className="flex items-center space-x-3">
