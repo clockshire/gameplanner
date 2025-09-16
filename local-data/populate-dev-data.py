@@ -13,6 +13,10 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from typing import Dict, List, Optional, Tuple
 
+# Constants
+MONKEY_PUZZLE_VENUE = "Monkey Puzzle (Farnborough)"
+DOUBLE_TREE_VENUE = "DoubleTree by Hilton Southampton"
+
 
 class DataPopulator:
     """Handles population of development data with proper cleanup and error handling."""
@@ -277,7 +281,7 @@ class DataPopulator:
         # Define venue data
         venues_data = [
             {
-                "name": "Monkey Puzzle (Farnborough)",
+                "name": MONKEY_PUZZLE_VENUE,
                 "description": "Laid-back family pub/restaurant chain serving classic dishes & international favourites.",
                 "address": "101 Ively Rd, Cove, Farnborough GU14 0LE",
                 "contactPhone": "+44 1252 546654",
@@ -287,7 +291,7 @@ class DataPopulator:
                 "mapLink": "https://maps.app.goo.gl/jxwgd532cFiAmDRJ7",
             },
             {
-                "name": "DoubleTree by Hilton Southampton",
+                "name": DOUBLE_TREE_VENUE,
                 "description": "Set in wooded gardens off the M27 motorway, this informal hotel is 3 miles from Southampton International Airport and 5 miles from Southampton Docks.",
                 "address": "Bracken Pl, Chilworth, Southampton SO16 3RB",
                 "contactPhone": "+44 2380 702700",
@@ -300,7 +304,7 @@ class DataPopulator:
 
         # Define room data for each venue
         rooms_data = {
-            "Monkey Puzzle (Farnborough)": [
+            MONKEY_PUZZLE_VENUE: [
                 {
                     "roomName": "Main Area",
                     "capacity": 30,
@@ -312,7 +316,7 @@ class DataPopulator:
                     "description": "Smaller private area at the back",
                 },
             ],
-            "DoubleTree by Hilton Southampton": [
+            DOUBLE_TREE_VENUE: [
                 {
                     "roomName": "Chilworth Suite",
                     "capacity": 30,
@@ -377,7 +381,7 @@ class DataPopulator:
                 "startTime": "14:00",
                 "endDate": past_date_2.strftime("%Y-%m-%d"),
                 "endTime": "20:00",
-                "venueName": "Monkey Puzzle (Farnborough)",
+                "venueName": MONKEY_PUZZLE_VENUE,
                 "maxParticipants": 25,
                 "entryFee": 5,
                 "eventType": "SOCIAL",
@@ -392,7 +396,7 @@ class DataPopulator:
                 "startTime": "18:00",
                 "endDate": future_date_1.strftime("%Y-%m-%d"),
                 "endTime": "22:00",
-                "venueName": "Monkey Puzzle (Farnborough)",
+                "venueName": MONKEY_PUZZLE_VENUE,
                 "maxParticipants": 30,
                 "entryFee": 0,
                 "eventType": "SOCIAL",
@@ -407,7 +411,7 @@ class DataPopulator:
                 "startTime": "19:00",
                 "endDate": future_next_month_2nd_tuesday.strftime("%Y-%m-%d"),
                 "endTime": "22:30",
-                "venueName": "Monkey Puzzle (Farnborough)",
+                "venueName": MONKEY_PUZZLE_VENUE,
                 "maxParticipants": 15,
                 "entryFee": 0,
                 "eventType": "SOCIAL",
@@ -422,7 +426,7 @@ class DataPopulator:
                 "startTime": "19:00",
                 "endDate": future_next_month_4th_tuesday.strftime("%Y-%m-%d"),
                 "endTime": "22:30",
-                "venueName": "Monkey Puzzle (Farnborough)",
+                "venueName": MONKEY_PUZZLE_VENUE,
                 "maxParticipants": 15,
                 "entryFee": 0,
                 "eventType": "SOCIAL",
@@ -437,7 +441,7 @@ class DataPopulator:
                 "startTime": "08:00",
                 "endDate": past_date_1.strftime("%Y-%m-%d"),
                 "endTime": "18:00",
-                "venueName": "DoubleTree by Hilton Southampton",
+                "venueName": DOUBLE_TREE_VENUE,
                 "maxParticipants": 80,
                 "entryFee": 75,
                 "eventType": "CORPORATE",
@@ -452,7 +456,7 @@ class DataPopulator:
                 "startTime": "09:00",
                 "endDate": future_date_2.strftime("%Y-%m-%d"),
                 "endTime": "17:00",
-                "venueName": "DoubleTree by Hilton Southampton",
+                "venueName": DOUBLE_TREE_VENUE,
                 "maxParticipants": 100,
                 "entryFee": 50,
                 "eventType": "CORPORATE",
@@ -522,7 +526,7 @@ class DataPopulator:
                 created_events.append(event_id)
 
                 # For Monkey Puzzle events, assign all available rooms
-                if venue_name == "Monkey Puzzle (Farnborough)":
+                if venue_name == MONKEY_PUZZLE_VENUE:
                     print(f"   🏠 Assigning rooms to {event_data['name']}...")
                     venue_id = created_venues[venue_name]
 
