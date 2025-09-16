@@ -306,13 +306,13 @@ class DataPopulator:
         rooms_data = {
             MONKEY_PUZZLE_VENUE: [
                 {
-                    "roomName": "Main Area",
-                    "capacity": 30,
+                    "roomName": "Main Town",
+                    "capacity": 18,
                     "description": "Large open area with tables and chairs",
                 },
                 {
-                    "roomName": "Back Room",
-                    "capacity": 15,
+                    "roomName": "Evil Corner",
+                    "capacity": 12,
                     "description": "Smaller private area at the back",
                 },
             ],
