@@ -291,6 +291,55 @@ class VenueService {
   }
 
   /**
+   * Update venue capacity based on the sum of all room capacities
+   * @param {string} venueId - Venue ID
+   * @returns {Promise<Object>} Update result
+   */
+  async updateVenueCapacity(venueId) {
+    try {
+      // Get all rooms for this venue
+      const RoomService = require('./rooms');
+      const roomService = new RoomService();
+      const roomsResult = await roomService.getVenueRooms(venueId);
+
+      if (!roomsResult.success) {
+        return {
+          success: false,
+          error: 'Failed to fetch venue rooms',
+          message: 'Failed to calculate venue capacity',
+        };
+      }
+
+      // Calculate total capacity from all rooms
+      const totalCapacity = roomsResult.data.reduce((sum, room) => {
+        return sum + (room.capacity || 0);
+      }, 0);
+
+      // Update venue with new capacity
+      const updateResult = await this.updateVenue(venueId, {
+        capacity: totalCapacity,
+      });
+
+      if (updateResult.success) {
+        return {
+          success: true,
+          data: { capacity: totalCapacity, roomCount: roomsResult.data.length },
+          message: `Venue capacity updated to ${totalCapacity} based on ${roomsResult.data.length} rooms`,
+        };
+      } else {
+        return updateResult;
+      }
+    } catch (error) {
+      console.error('Error updating venue capacity:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Failed to update venue capacity',
+      };
+    }
+  }
+
+  /**
    * Delete all rooms associated with a venue
    * @param {string} venueId - Venue ID
    * @returns {Promise<Object>} Deletion result with room details

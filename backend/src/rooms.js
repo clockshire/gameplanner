@@ -56,6 +56,19 @@ class RoomService {
 
       await dynamodb.put(params).promise();
 
+      // Update venue capacity after room creation
+      try {
+        const VenueService = require('./venues');
+        const venueService = new VenueService();
+        await venueService.updateVenueCapacity(roomData.venueId);
+      } catch (error) {
+        console.warn(
+          'Failed to update venue capacity after room creation:',
+          error
+        );
+        // Don't fail room creation if capacity update fails
+      }
+
       return {
         success: true,
         data: room,
@@ -189,6 +202,19 @@ class RoomService {
 
       const result = await dynamodb.update(params).promise();
 
+      // Update venue capacity after room update
+      try {
+        const VenueService = require('./venues');
+        const venueService = new VenueService();
+        await venueService.updateVenueCapacity(result.Attributes.venueId);
+      } catch (error) {
+        console.warn(
+          'Failed to update venue capacity after room update:',
+          error
+        );
+        // Don't fail room update if capacity update fails
+      }
+
       return {
         success: true,
         data: result.Attributes,
@@ -211,6 +237,18 @@ class RoomService {
    */
   async deleteRoom(roomId) {
     try {
+      // First get the room to retrieve venueId before deletion
+      const roomResult = await this.getRoom(roomId);
+      if (!roomResult.success) {
+        return {
+          success: false,
+          error: 'Room not found',
+          message: 'Failed to delete room - room not found',
+        };
+      }
+
+      const venueId = roomResult.data.venueId;
+
       const params = {
         TableName: this.tableName,
         Key: {
@@ -221,6 +259,19 @@ class RoomService {
       };
 
       await dynamodb.delete(params).promise();
+
+      // Update venue capacity after room deletion
+      try {
+        const VenueService = require('./venues');
+        const venueService = new VenueService();
+        await venueService.updateVenueCapacity(venueId);
+      } catch (error) {
+        console.warn(
+          'Failed to update venue capacity after room deletion:',
+          error
+        );
+        // Don't fail room deletion if capacity update fails
+      }
 
       return {
         success: true,
