@@ -2,7 +2,7 @@
  * Image upload component for testing S3/MinIO functionality
  */
 
-const { useState } = React;
+const { useState, useEffect } = React;
 
 /**
  * ImageUpload component
@@ -14,6 +14,105 @@ function ImageUpload() {
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [error, setError] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
+
+  // Fetch files when component mounts or sessionToken changes
+  useEffect(() => {
+    if (sessionToken) {
+      fetchUploadedFiles();
+    }
+  }, [sessionToken]);
+
+  /**
+   * Fetch list of uploaded files
+   */
+  const fetchUploadedFiles = async () => {
+    if (!sessionToken) return;
+
+    setLoadingFiles(true);
+    try {
+      const response = await fetch(
+        'http://localhost:3001/api/images/list?prefix=test-uploads',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setUploadedFiles(result.data || []);
+      } else {
+        setError(result.message || 'Failed to fetch files');
+      }
+    } catch (err) {
+      setError('Network error: ' + err.message);
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  /**
+   * Generate presigned URL for a file
+   */
+  const getFileUrl = async (fileKey) => {
+    if (!sessionToken) return null;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/images/presigned/${encodeURIComponent(
+          fileKey
+        )}?expiresIn=3600`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+      return result.success ? result.data.url : null;
+    } catch (err) {
+      console.error('Error generating presigned URL:', err);
+      return null;
+    }
+  };
+
+  /**
+   * Delete a file
+   */
+  const deleteFile = async (fileKey) => {
+    if (!sessionToken) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/images/${encodeURIComponent(fileKey)}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh the file list
+        await fetchUploadedFiles();
+        setError(null);
+      } else {
+        setError(result.message || 'Failed to delete file');
+      }
+    } catch (err) {
+      setError('Network error: ' + err.message);
+    }
+  };
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -65,6 +164,8 @@ function ImageUpload() {
         setSelectedFile(null);
         // Reset file input
         document.getElementById('file-input').value = '';
+        // Refresh the file list
+        await fetchUploadedFiles();
       } else {
         setError(result.message || 'Upload failed');
       }
@@ -189,6 +290,72 @@ function ImageUpload() {
             <p className="text-red-300">{error}</p>
           </div>
         )}
+
+        {/* Uploaded Files List */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white">
+              Your Uploaded Files
+            </h3>
+            <button
+              onClick={fetchUploadedFiles}
+              disabled={loadingFiles}
+              className="px-3 py-1 bg-gray-600 hover:bg-gray-500 disabled:bg-gray-700 text-white text-sm rounded transition-colors"
+            >
+              {loadingFiles ? 'Loading...' : 'Refresh'}
+            </button>
+          </div>
+
+          {loadingFiles ? (
+            <div className="text-center py-4">
+              <div className="text-gray-400">Loading files...</div>
+            </div>
+          ) : uploadedFiles.length === 0 ? (
+            <div className="text-center py-8 bg-gray-700 rounded-lg">
+              <div className="text-gray-400 mb-2">No files uploaded yet</div>
+              <div className="text-sm text-gray-500">
+                Upload an image above to see it here
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {uploadedFiles.map((file, index) => (
+                <div
+                  key={file.Key || index}
+                  className="bg-gray-700 rounded-lg p-4 flex items-center justify-between"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white font-medium truncate">
+                      {file.Key?.split('/').pop() || 'Unknown file'}
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      {(file.Size / 1024).toFixed(2)} KB •{' '}
+                      {new Date(file.LastModified).toLocaleDateString('en-GB')}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 ml-4">
+                    <button
+                      onClick={() =>
+                        getFileUrl(file.Key).then(
+                          (url) => url && window.open(url, '_blank')
+                        )
+                      }
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition-colors"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => deleteFile(file.Key)}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-sm rounded transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Instructions */}
         <div className="text-xs text-gray-400 space-y-1">
