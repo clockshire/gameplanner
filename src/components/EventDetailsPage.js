@@ -752,112 +752,114 @@ function EventDetailsPage({
               </div>
             </div>
 
-            {/* Event Rooms Section */}
-            {eventRooms.length > 0 && (
-              <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
-                <h2 className="text-xl font-semibold text-white mb-4">
-                  Assigned Rooms & Availability
-                </h2>
-                <div className="space-y-4">
-                  {eventRooms.map((room) => (
-                    <div
-                      key={room.roomId}
-                      className="bg-gray-700 rounded-lg p-4 border border-gray-600"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-lg font-medium text-white">
-                              {room.roomName}
-                            </h3>
-                            {room.capacity && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700">
-                                {room.capacity} 👥
-                              </span>
+            {/* Event Rooms Section - Only show to event organizers */}
+            {eventRooms.length > 0 &&
+              currentUser &&
+              event.createdBy === currentUser.userId && (
+                <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
+                  <h2 className="text-xl font-semibold text-white mb-4">
+                    Assigned Rooms & Availability
+                  </h2>
+                  <div className="space-y-4">
+                    {eventRooms.map((room) => (
+                      <div
+                        key={room.roomId}
+                        className="bg-gray-700 rounded-lg p-4 border border-gray-600"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h3 className="text-lg font-medium text-white">
+                                {room.roomName}
+                              </h3>
+                              {room.capacity && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200 border border-blue-700">
+                                  {room.capacity} 👥
+                                </span>
+                              )}
+                            </div>
+
+                            {room.description && (
+                              <p className="text-gray-300 text-sm mb-3">
+                                {room.description}
+                              </p>
                             )}
-                          </div>
 
-                          {room.description && (
-                            <p className="text-gray-300 text-sm mb-3">
-                              {room.description}
-                            </p>
-                          )}
+                            {/* Available Times */}
+                            {room.availableTimes &&
+                              room.availableTimes.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-400 mb-2">
+                                    Available Times:
+                                  </h4>
+                                  <div className="flex flex-wrap gap-2">
+                                    {room.availableTimes.map((time, index) => {
+                                      // Format the date for display
+                                      const formatDateForDisplay = (
+                                        dateString
+                                      ) => {
+                                        try {
+                                          const date = new Date(dateString);
+                                          const dayName =
+                                            date.toLocaleDateString('en-GB', {
+                                              weekday: 'long',
+                                            });
+                                          const dayNumber = date.getDate();
+                                          const monthName =
+                                            date.toLocaleDateString('en-GB', {
+                                              month: 'short',
+                                            });
+                                          const year = date.getFullYear();
 
-                          {/* Available Times */}
-                          {room.availableTimes &&
-                            room.availableTimes.length > 0 && (
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-400 mb-2">
-                                  Available Times:
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                  {room.availableTimes.map((time, index) => {
-                                    // Format the date for display
-                                    const formatDateForDisplay = (
-                                      dateString
-                                    ) => {
-                                      try {
-                                        const date = new Date(dateString);
-                                        const dayName = date.toLocaleDateString(
-                                          'en-GB',
-                                          { weekday: 'long' }
-                                        );
-                                        const dayNumber = date.getDate();
-                                        const monthName =
-                                          date.toLocaleDateString('en-GB', {
-                                            month: 'short',
-                                          });
-                                        const year = date.getFullYear();
-
-                                        const getOrdinalSuffix = (day) => {
-                                          if (day >= 11 && day <= 13)
-                                            return 'th';
-                                          switch (day % 10) {
-                                            case 1:
-                                              return 'st';
-                                            case 2:
-                                              return 'nd';
-                                            case 3:
-                                              return 'rd';
-                                            default:
+                                          const getOrdinalSuffix = (day) => {
+                                            if (day >= 11 && day <= 13)
                                               return 'th';
-                                          }
-                                        };
+                                            switch (day % 10) {
+                                              case 1:
+                                                return 'st';
+                                              case 2:
+                                                return 'nd';
+                                              case 3:
+                                                return 'rd';
+                                              default:
+                                                return 'th';
+                                            }
+                                          };
 
-                                        return `${dayName}, ${dayNumber}${getOrdinalSuffix(
-                                          dayNumber
-                                        )} ${monthName} ${year}`;
-                                      } catch (error) {
-                                        // Fallback to original format if date parsing fails
-                                        return (
-                                          time.dayOfWeek
-                                            .charAt(0)
-                                            .toUpperCase() +
-                                          time.dayOfWeek.slice(1)
-                                        );
-                                      }
-                                    };
+                                          return `${dayName}, ${dayNumber}${getOrdinalSuffix(
+                                            dayNumber
+                                          )} ${monthName} ${year}`;
+                                        } catch (error) {
+                                          // Fallback to original format if date parsing fails
+                                          return (
+                                            time.dayOfWeek
+                                              .charAt(0)
+                                              .toUpperCase() +
+                                            time.dayOfWeek.slice(1)
+                                          );
+                                        }
+                                      };
 
-                                    return (
-                                      <span
-                                        key={index}
-                                        className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-green-900 text-green-200 border border-green-700"
-                                      >
-                                        {formatDateForDisplay(time.dayOfWeek)}{' '}
-                                        {time.startTime}-{time.endTime}
-                                      </span>
-                                    );
-                                  })}
+                                      return (
+                                        <span
+                                          key={index}
+                                          className="inline-flex items-center px-3 py-1.5 rounded text-xs font-medium bg-green-900 text-green-200 border border-green-700"
+                                        >
+                                          {formatDateForDisplay(time.dayOfWeek)}{' '}
+                                          {time.startTime}-{time.endTime}
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Invitation Summary - Only visible to event creator */}
             {event && currentUser && event.createdBy === currentUser.userId && (
