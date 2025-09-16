@@ -517,24 +517,6 @@ function EventDetailsPage({
               )}
               <h1 className="text-2xl font-bold text-white">Event Details</h1>
             </div>
-
-            {/* Action Buttons - Only show to event creator */}
-            {currentUser && event.createdBy === currentUser.userId && (
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => onEditEvent(event)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
-                >
-                  Edit Event
-                </button>
-                <button
-                  onClick={() => onDeleteEvent(event)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors"
-                >
-                  Delete Event
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -613,9 +595,28 @@ function EventDetailsPage({
                 {/* Main Event Information */}
                 <div className="lg:col-span-2">
                   <div className="bg-gray-700 rounded-lg p-6 mb-6">
-                    <h2 className="text-xl font-semibold text-white mb-4">
-                      Event Information
-                    </h2>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-white">
+                        Event Information
+                      </h2>
+                      {currentUser &&
+                        event.createdBy === currentUser.userId && (
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={() => onEditEvent(event)}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm"
+                            >
+                              Edit Event
+                            </button>
+                            <button
+                              onClick={() => onDeleteEvent(event)}
+                              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors text-sm"
+                            >
+                              Delete Event
+                            </button>
+                          </div>
+                        )}
+                    </div>
 
                     {event.description && (
                       <div className="mb-6">
